@@ -31,6 +31,13 @@ VALUE = {
 class Card:
 
     def __init__(self, suit: str, rank: str):
+        if suit not in SUITS:
+            logger.error(f'The provided suit "{suit}" does not exist.')
+            raise ValueError(f'The provided suit "{suit}" does not exist.')
+        if rank not in RANKS:
+            logger.error(f'The provided suit "{rank}" does not exist.')
+            raise ValueError(f'The provided rank "{rank}" does not exist.')
+
         self._suit = suit
         self._rank = rank
 
