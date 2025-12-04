@@ -28,3 +28,26 @@ VALUE = {
 }
 
 
+class Card:
+
+    def __init__(self, suit: str, rank: str):
+        self._suit = suit
+        self._rank = rank
+
+    @property
+    def suit(self) -> str:
+        return self._suit
+
+    @property
+    def rank(self) -> str:
+        return self._rank
+
+    @property
+    def value(self) -> Union[int, Tuple[int, int]]:
+        return VALUE.get(self._rank)
+
+    def __str__(self) -> str:
+        return f"{self._rank} of {self._suit}"
+
+    def __repr__(self):
+        return f"Card(rank={self._rank}, suit={self._suit})"
