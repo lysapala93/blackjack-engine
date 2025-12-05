@@ -8,7 +8,6 @@
 ## Deck Class
 - [ ] Contain 6 decks of 52 cards each
 - [ ] Implement card-drawing algorithm (deck gets smaller after draw)
-- [ ] Distribution logic: deal first to player, then dealer
 - [ ] Handle player and dealer split cards
 - [ ] Shuffle when a split occurs
 - [ ] Include all cards with their correct values
@@ -43,3 +42,4 @@
 - [ ] Handle rewards and bets
 - [ ] Track rounds and statistics
 - [ ] Provide user interface (optional GUI)
+- [ ] Distribution logic: deal first to player, then dealer
