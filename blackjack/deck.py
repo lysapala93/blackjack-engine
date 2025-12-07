@@ -48,6 +48,15 @@ class Deck:
     def finished_round(self) -> bool:
         return self._end_game
 
+    def needs_shuffle(self) -> bool:
+        if not self._set_end_of_shoe:
+            return False
+
+        if self.num_cards <= (52 * 6 - self._pos_end_of_shoe):
+            self._end_game = True
+
+            return None
+
     def draw(self) -> Card:
         if not self._deck:
             logger.error("Cannot draw from empty deck.")
@@ -71,3 +80,12 @@ class Deck:
 
         return f"Deck is shuffled"
 
+    def set_cutcard(self, pos: int):
+        self._deck = self._deck[pos:] + self._deck[:pos]
+        logger.debug(f"Order of cards: {self._deck}")
+
+        return f"Deck is reshuffeled after cutcard"
+
+    def set_end_of_shoe(self, remaining_min: int = 50, remaining_max: int = 80) -> None:
+        self._pos_end_of_shoe = randint(remaining_min, remaining_max)
+        self._set_end_of_shoe = True

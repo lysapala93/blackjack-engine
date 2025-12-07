@@ -9,8 +9,8 @@
 - [X] Contain 6 decks of 52 cards each
 - [X] Implement card-drawing algorithm (deck gets smaller after draw)
 - [ ] Handle player and dealer split cards
-- [ ] Shuffle when a split occurs
-- [ ] Include all cards with their correct values
+- [X] Shuffle when a split occurs
+- [X] Include all cards with their correct values
 
 ## Hand Class
 - [ ] Distinguish between dealer and player hands
