@@ -63,3 +63,11 @@ class Deck:
 
         return card
 
+    def shuffle(self) -> str:
+        shuffle(self._deck)
+        self._shuffled = True
+        logger.debug("Deck was shuffled successfully")
+        logger.debug(f"Order of cards: {self._deck}")
+
+        return f"Deck is shuffled"
+
