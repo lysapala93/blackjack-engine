@@ -7,7 +7,7 @@
 
 ## Deck Class
 - [X] Contain 6 decks of 52 cards each
-- [ ] Implement card-drawing algorithm (deck gets smaller after draw)
+- [X] Implement card-drawing algorithm (deck gets smaller after draw)
 - [ ] Handle player and dealer split cards
 - [ ] Shuffle when a split occurs
 - [ ] Include all cards with their correct values
