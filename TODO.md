@@ -6,7 +6,7 @@
 - [X] Provide method to get card value(s) (consider Ace as 1 or 11)
 
 ## Deck Class
-- [ ] Contain 6 decks of 52 cards each
+- [X] Contain 6 decks of 52 cards each
 - [ ] Implement card-drawing algorithm (deck gets smaller after draw)
 - [ ] Handle player and dealer split cards
 - [ ] Shuffle when a split occurs
