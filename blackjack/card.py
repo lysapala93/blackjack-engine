@@ -58,3 +58,8 @@ class Card:
 
     def __repr__(self):
         return f"Card(rank={self._rank}, suit={self._suit})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Card):
+            return False
+        return self._suit == other._suit and self._rank == other._rank
