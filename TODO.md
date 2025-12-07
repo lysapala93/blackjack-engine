@@ -12,6 +12,13 @@
 - [X] Shuffle when a split occurs
 - [X] Include all cards with their correct values
 
+## Discard Tray
+- [ ] Collect used cards
+- [ ] Allow reshuffling into deck when needed
+- [ ] Track number of cards in discard tray
+- [ ] Trigger reshuffle when end of shoe is reached
+- [ ] Generate statistics on card distribution (optional)
+
 ## Hand Class
 - [ ] Distinguish between dealer and player hands
 - [ ] Player hand shows all cards
