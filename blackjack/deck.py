@@ -67,13 +67,11 @@ class Deck:
 
         return card
 
-    def shuffle(self) -> str:
+    def shuffle(self):
         shuffle(self._deck)
         self._shuffled = True
-        logger.debug("Deck was shuffled successfully")
-        logger.debug(f"Order of cards: {self._deck}")
-
-        return f"Deck is shuffled"
+        logger.debug("Deck shuffled.")
+        return "Deck shuffled."
 
     def set_cutcard(self, pos: int):
         if pos < 0 or pos >= self.num_cards:
