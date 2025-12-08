@@ -76,11 +76,22 @@ class Deck:
         return f"Deck is shuffled"
 
     def set_cutcard(self, pos: int):
-        self._deck = self._deck[pos:] + self._deck[:pos]
-        logger.debug(f"Order of cards: {self._deck}")
+        if pos < 0 or pos >= self.num_cards:
+            raise ValueError("Cut position out of bounds.")
 
-        return f"Deck is reshuffeled after cutcard"
+        # Realistic casino cut:
+        # slice top -> bottom
+        top = self._deck[:pos]
+        bottom = self._deck[pos:]
+        self._deck = bottom + top
 
-    def set_end_of_shoe(self, remaining_min: int = 50, remaining_max: int = 80) -> None:
-        self._pos_end_of_shoe = randint(remaining_min, remaining_max)
-        self._set_end_of_shoe = True
+        self._cut_position = pos
+        logger.debug(f"Deck cut at position {pos}.")
+        return "Deck cut."
+
+    def set_end_of_shoe(self, remaining_min: int = 50, remaining_max: int = 80):
+        self._end_of_shoe_position = randint(remaining_min, remaining_max)
+        logger.debug(
+            f"End-of-shoe marker set at last {self._end_of_shoe_position} cards."
+        )
+        return None
