@@ -15,6 +15,10 @@ class Deck:
 
         self._initial_cards = len(self._deck)
 
+    # ---------------------------------------------
+    # Deck generation
+    # ---------------------------------------------
+    def _generate_deck(self) -> list[Card]:
         return [
             Card(suit, rank)
             for _ in range(self._deck_size)
@@ -37,15 +41,9 @@ class Deck:
     def end_game(self) -> bool:
         return self._end_game
 
-    def needs_shuffle(self) -> bool:
-        if not self._set_end_of_shoe:
-            return False
-
-        if self.num_cards <= (52 * 6 - self._pos_end_of_shoe):
-            self._end_game = True
-
-            return True
-
+    # ---------------------------------------------
+    # Core logic
+    # ---------------------------------------------
     def draw(self) -> Card:
         if not self._deck:
             logger.error("Cannot draw from empty deck!")
@@ -67,6 +65,9 @@ class Deck:
 
         return card
 
+    # ---------------------------------------------
+    # Shuffle mechanics
+    # ---------------------------------------------
     def shuffle(self):
         shuffle(self._deck)
         self._shuffled = True
