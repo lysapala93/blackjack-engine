@@ -22,28 +22,19 @@ class Deck:
             for rank in RANKS
         ]
 
+    # ---------------------------------------------
+    # Properties
+    # ---------------------------------------------
     @property
     def num_cards(self) -> int:
         return len(self._deck)
-
-    @property
-    def deck_size(self) -> int:
-        return self._deck_size
-
-    @property
-    def set_cutcard(self) -> bool:
-        return self._set_cutcard
-
-    @property
-    def set_end_of_shoe(self) -> bool:
-        return self._set_end_of_shoe
 
     @property
     def shuffled(self) -> bool:
         return self._shuffled
 
     @property
-    def finished_round(self) -> bool:
+    def end_game(self) -> bool:
         return self._end_game
 
     def needs_shuffle(self) -> bool:
