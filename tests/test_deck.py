@@ -46,4 +46,4 @@ class TestDeckBasic:
         for _ in range(shoe._pos_end_of_shoe):
             shoe.draw()
 
-        assert shoe.needs_shuffle == True
+        assert shoe.needs_shuffle() == True

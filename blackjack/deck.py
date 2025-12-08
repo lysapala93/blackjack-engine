@@ -55,7 +55,7 @@ class Deck:
         if self.num_cards <= (52 * 6 - self._pos_end_of_shoe):
             self._end_game = True
 
-            return None
+            return True
 
     def draw(self) -> Card:
         if not self._deck:
