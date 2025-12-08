@@ -42,8 +42,13 @@ class TestDeckBasic:
         shoe = Deck(deck_size=6)
         shoe.shuffle()
         shoe.set_end_of_shoe()
+        print(shoe._end_of_shoe_position)
 
-        for _ in range(shoe._pos_end_of_shoe):
+        start_num_cards = shoe.num_cards
+        for _ in range(shoe.num_cards - shoe._end_of_shoe_position):
+            print(
+                f"Number of cards: {shoe.num_cards}\n, Distance to EoS: {shoe._end_of_shoe_position - (start_num_cards - shoe.num_cards)}"
+            )
             shoe.draw()
 
-        assert shoe.needs_shuffle() == True
+        assert shoe.end_game == True
