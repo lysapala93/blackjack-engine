@@ -48,16 +48,22 @@ class Deck:
 
     def draw(self) -> Card:
         if not self._deck:
-            logger.error("Cannot draw from empty deck.")
+            logger.error("Cannot draw from empty deck!")
             raise RuntimeError("Deck is empty")
 
         if not self._shuffled:
-            logger.warning("Drawing from an unshuffled deck!")
+            logger.warning("Drawing from unshuffled deck!")
 
         card = self._deck.pop(0)
 
-        if self.needs_shuffle:
-            logger.warning("End of shoe reached – reshuffle required after this round")
+        # Check end of shoe
+        if self._end_of_shoe_position is not None:
+            if self.num_cards <= self._end_of_shoe_position:
+                if not self._end_game:
+                    logger.warning(
+                        "End of shoe reached — reshuffle required after round."
+                    )
+                self._end_game = True
 
         return card
 
