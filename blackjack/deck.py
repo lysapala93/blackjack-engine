@@ -1,4 +1,5 @@
 from .card import Card, SUITS, RANKS
+from .discard_tray import DiscardTray
 from random import shuffle, randint
 from .logger import logger
 
@@ -10,7 +11,7 @@ class Deck:
 
         self._shuffled = False
         self._cut_position = None
-        self._end_of_shoe_position = None
+        self._end_of_shoe_threshold = None
         self._end_game = False
 
         self._initial_cards = len(self._deck)
@@ -29,9 +30,6 @@ class Deck:
     # ---------------------------------------------
     # Properties
     # ---------------------------------------------
-    @property
-    def num_cards(self) -> int:
-        return len(self._deck)
 
     @property
     def shuffled(self) -> bool:
@@ -55,8 +53,8 @@ class Deck:
         card = self._deck.pop(0)
 
         # Check end of shoe
-        if self._end_of_shoe_position is not None:
-            if self.num_cards <= self._end_of_shoe_position:
+        if self._end_of_shoe_threshold is not None:
+            if len(self) <= self._end_of_shoe_threshold:
                 if not self._end_game:
                     logger.warning(
                         "End of shoe reached — reshuffle required after round."
@@ -65,17 +63,33 @@ class Deck:
 
         return card
 
+    def _reset(self) -> None:
+        self._shuffled = False
+        self._cut_position = None
+        self._end_of_shoe_threshold = None
+        self._end_game = False
+
+        return None
+
+    def collect_discard_pile(self, discard_tray: DiscardTray) -> None:
+        discarded_cards = discard_tray.reset()
+        self._deck.extend(discarded_cards)
+
+        self._reset()
+
+        return None
+
     # ---------------------------------------------
     # Shuffle mechanics
     # ---------------------------------------------
-    def shuffle(self):
+    def shuffle(self) -> str:
         shuffle(self._deck)
         self._shuffled = True
         logger.debug("Deck shuffled.")
         return "Deck shuffled."
 
-    def set_cutcard(self, pos: int):
-        if pos < 0 or pos >= self.num_cards:
+    def set_cutcard(self, pos: int) -> str:
+        if pos < 0 or pos >= len(self):
             raise ValueError("Cut position out of bounds.")
 
         # Realistic casino cut:
@@ -88,9 +102,27 @@ class Deck:
         logger.debug(f"Deck cut at position {pos}.")
         return "Deck cut."
 
-    def set_end_of_shoe(self, remaining_min: int = 50, remaining_max: int = 80):
-        self._end_of_shoe_position = randint(remaining_min, remaining_max)
+    def set_end_of_shoe(self, remaining_min: int = 50, remaining_max: int = 80) -> None:
+        self._end_of_shoe_threshold = randint(remaining_min, remaining_max)
         logger.debug(
-            f"End-of-shoe marker set at last {self._end_of_shoe_position} cards."
+            f"End-of-shoe marker set at last {self._end_of_shoe_threshold} cards."
         )
         return None
+
+    # ----------------------------------------
+    # Magic Methods
+    # -----------------------------------------
+
+    def __len__(self) -> int:
+        return len(self._deck)
+
+    def __repr__(self) -> str:
+        shoe_size = (
+            len(self) - self._end_of_shoe_threshold
+            if self._end_of_shoe_threshold is not None
+            else "not set"
+        )
+        return f"Deck(Number_of_Cards={len(self)}, shuffled={self.shuffled}, shoe_size={shoe_size})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
