@@ -6,7 +6,7 @@ class TestDeckBasic:
     def test_decksize(self):
         shoe = Deck(deck_size=6)
 
-        assert shoe.num_cards == 6 * 52
+        assert len(shoe) == 6 * 52
 
     def test_first_card(self):
         shoe = Deck(deck_size=6)
@@ -20,7 +20,7 @@ class TestDeckBasic:
         assert type(card) == Card
         assert card.suit == "Hearts"
         assert card.rank == "2"
-        assert shoe.num_cards == (6 * 52) - 1
+        assert len(shoe) == (6 * 52) - 1
 
     def test_shuffle(self):
         shoe = Deck(deck_size=6)
@@ -42,12 +42,12 @@ class TestDeckBasic:
         shoe = Deck(deck_size=6)
         shoe.shuffle()
         shoe.set_end_of_shoe()
-        print(shoe._end_of_shoe_position)
+        print(shoe._end_of_shoe_threshold)
 
-        start_num_cards = shoe.num_cards
-        for _ in range(shoe.num_cards - shoe._end_of_shoe_position):
+        start_num_cards = len(shoe)
+        for _ in range(len(shoe) - shoe._end_of_shoe_threshold):
             print(
-                f"Number of cards: {shoe.num_cards}\n, Distance to EoS: {shoe._end_of_shoe_position - (start_num_cards - shoe.num_cards)}"
+                f"Number of cards: {len(shoe)}\n, Distance to EoS: {shoe._end_of_shoe_threshold - (start_num_cards - len(shoe))}"
             )
             shoe.draw()
 
