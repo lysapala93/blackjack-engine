@@ -42,11 +42,14 @@ class TestDiscard:
         num_cards_begin = len(deck)
 
         discard_tray = DiscardTray()
-        card = ()
-        for _ in len(deck):
-            card = card + deck.draw()
+        card = list()
+        for _ in range(len(deck)):
+            card.append(deck.draw())
+            discard_tray.discard(card)
+            card.clear()
             if deck.end_game == True:
-                discard_tray.discard(deck)
+                cards = discard_tray.reset()
+                deck.collect_discard_pile(cards)
                 break
 
         assert len(discard_tray) == 0
