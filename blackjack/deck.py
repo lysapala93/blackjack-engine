@@ -71,9 +71,8 @@ class Deck:
 
         return None
 
-    def collect_discard_pile(self, discard_tray: DiscardTray) -> None:
-        discarded_cards = discard_tray.reset()
-        self._deck.extend(discarded_cards)
+    def collect_discard_pile(self, discard: list[Card]) -> None:
+        self._deck.extend(discard)
 
         self._reset()
 
