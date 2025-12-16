@@ -61,3 +61,11 @@ class Hand:
     def bust(self):
         if self.score > 21:
             return True
+
+    @property
+    def splitting_possible(self) -> bool:
+        return (
+            len(self.hand) == 2
+            and self.hand[0].value == self.hand[1].value
+            and self.role == "player"
+        )
