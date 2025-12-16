@@ -20,17 +20,17 @@
 - [ ] Generate statistics on card distribution (optional)
 
 ## Hand Class
-- [ ] Distinguish between dealer and player hands
-- [ ] Add cards to hand
-- [ ] Player hand shows all cards
+- [X] Distinguish between dealer and player hands
+- [X] Add cards to hand
+- [X] Player hand shows all cards
 - [ ] Dealer hand shows one card (open) and one card (hidden)
-- [ ] Calculate hand values
-- [ ] Handle Ace logic (soft/hard)
-- [ ] Detect blackjack
-- [ ] Detect bust
+- [X] Calculate hand values
+- [X] Handle Ace logic (soft/hard)
+- [X] Detect blackjack
+- [X] Detect bust
 - [ ] Add some nice magic functions 
-- [ ] Applicability for discard tray
-- [ ] Split hands support
+- [X] Applicability for discard tray
+- [X] Split hands support
 - [ ] Double down support
 
 ## Player Class
