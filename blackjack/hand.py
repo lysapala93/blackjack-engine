@@ -74,3 +74,12 @@ class Hand:
             and self.hand[0].value == self.hand[1].value
             and self.role == "player"
         )
+
+    # ----------------------------------------------
+    # functions
+    # ----------------------------------------------
+    def add(self, card: Card) -> None:
+        self._hand.append(card)
+
+        return None
+
