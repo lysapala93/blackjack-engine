@@ -89,3 +89,16 @@ class Hand:
 
         return cards
 
+    def split(self):
+        if not self.splitting_possible:
+            raise ValueError(f"Splitting with hand {self.hand} not possible")
+
+        hand_1 = Hand(role="player", name=self._owner_hand)
+        hand_2 = Hand(role="player", name=self._owner_hand)
+
+        hand_1.add(self._hand[0])
+        hand_2.add(self._hand[1])
+
+        self._hand.clear()
+
+        return hand_1, hand_2
