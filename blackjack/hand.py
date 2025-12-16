@@ -53,6 +53,11 @@ class Hand:
         return max(valid_scores) if valid_scores else min(possible_scores)
 
     @property
+    def hand(self):
+        if self._role == "player":
+            return self._hand
+
+    @property
     def blackjack(self):
         if len(self.hand) == 2 and self.score == 21:
             return True
