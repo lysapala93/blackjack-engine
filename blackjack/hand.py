@@ -37,3 +37,17 @@ class Hand:
 
         return None
 
+    @property
+    def score(self) -> int:
+        if not self._hand:
+            return 0
+
+        values = [
+            list(card.value) if isinstance(card.value, tuple) else [card.value]
+            for card in self._hand
+        ]
+
+        possible_scores = {sum(combo) for combo in product(*values)}
+        valid_scores = [s for s in possible_scores if s <= 21]
+
+        return max(valid_scores) if valid_scores else min(possible_scores)
