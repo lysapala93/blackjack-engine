@@ -83,3 +83,9 @@ class Hand:
 
         return None
 
+    def discard(self) -> None:
+        cards = self._hand.copy()
+        self.hand.clear()
+
+        return cards
+
