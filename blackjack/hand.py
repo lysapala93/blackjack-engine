@@ -19,6 +19,7 @@ class Hand:
 
         self._role = role
         self._hand: list[Card] = []
+        self._revealed: bool = False
 
     # -----------------------------------------------
     # properties
@@ -102,3 +103,7 @@ class Hand:
         self._hand.clear()
 
         return hand_1, hand_2
+
+    def reveal(self) -> None:
+        self._revealed = True
+
