@@ -151,7 +151,15 @@ class TestHandDealer:
         for card in cards:
             hand_dealer.add(card)
 
-        assert hand_dealer.hand == [Card(suit="Spades", rank="Jack"), "hidden"]
+        assert hand_dealer.visible_hand == [Card(suit="Spades", rank="Jack"), None]
+
+    def test_score(self):
+        hand_dealer = Hand(role="dealer")
+        cards = [Card(suit="Spades", rank="Jack"), Card(suit="Spades", rank="Ace")]
+        for card in cards:
+            hand_dealer.add(card)
+
+        assert hand_dealer.visible_score == 10
 
     def test_hand_revealed(self):
         hand_dealer = Hand(role="dealer")
