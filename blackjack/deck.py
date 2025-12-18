@@ -81,11 +81,10 @@ class Deck:
     # ---------------------------------------------
     # Shuffle mechanics
     # ---------------------------------------------
-    def shuffle(self) -> str:
+    def shuffle(self) -> None:
         shuffle(self._deck)
         self._shuffled = True
         logger.debug("Deck shuffled.")
-        return "Deck shuffled."
 
     def set_cutcard(self, pos: int) -> str:
         if pos < 0 or pos >= len(self):
