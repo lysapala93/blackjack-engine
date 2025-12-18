@@ -39,6 +39,10 @@ class Deck:
     def end_game(self) -> bool:
         return self._end_game
 
+    @property
+    def initial_cards(self) -> int:
+        return self._initial_cards
+
     # ---------------------------------------------
     # Core logic
     # ---------------------------------------------
