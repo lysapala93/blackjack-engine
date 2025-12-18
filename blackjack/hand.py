@@ -43,6 +43,8 @@ class Hand:
         if not self._hand:
             return 0
 
+        return self._calculate_score()
+
     @property
     def visible_score(self) -> int | None:
         if self.role == "dealer" and not self._revealed:
@@ -68,13 +70,11 @@ class Hand:
 
     @property
     def blackjack(self):
-        if len(self.hand) == 2 and self.score == 21:
-            return True
+        return len(self.hand) == 2 and self.score == 21
 
     @property
     def bust(self):
-        if self.score > 21:
-            return True
+        return self.score > 21
 
     @property
     def splitting_possible(self) -> bool:
