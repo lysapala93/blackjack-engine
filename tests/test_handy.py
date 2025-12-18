@@ -168,4 +168,4 @@ class TestHandDealer:
             hand_dealer.add(card)
         hand_dealer.reveal()
 
-        assert hand_dealer.cards == cards
+        assert hand_dealer.hand == cards
