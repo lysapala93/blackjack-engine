@@ -23,12 +23,12 @@
 - [X] Distinguish between dealer and player hands
 - [X] Add cards to hand
 - [X] Player hand shows all cards
-- [ ] Dealer hand shows one card (open) and one card (hidden)
+- [X] Dealer hand shows one card (open) and one card (hidden)
 - [X] Calculate hand values
 - [X] Handle Ace logic (soft/hard)
 - [X] Detect blackjack
 - [X] Detect bust
-- [ ] Add some nice magic functions 
+- [X] Add some nice magic methods 
 - [X] Applicability for discard tray
 - [X] Split hands support
 - [ ] Double down support

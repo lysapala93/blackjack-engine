@@ -124,3 +124,27 @@ class Hand:
         valid_scores = [s for s in possible_scores if s <= 21]
 
         return max(valid_scores) if valid_scores else min(possible_scores)
+
+    # ----------------------------------------------
+    # Magic Methods
+    # ----------------------------------------------
+
+    def __repr__(self) -> str:
+        cards_str = ", ".join(
+            str(card) if card else "Hidden" for card in self.visible_hand
+        )
+
+        return f"<Hand(owner={self._name}, role={self._role}, cards=[{cards_str}], score={self.visible_score})>"
+
+    def __str__(self) -> str:
+        cards_str = ", ".join(str(card) for card in self.visible_hand if card)
+        return f"{self._name}'s Hand: [{cards_str}] Score: {self.visible_score}"
+
+    def __len__(self) -> int:
+        return len(self._hand)
+
+    def __contains__(self, card: Card) -> bool:
+        return card in self._hand
+
+    def __iter__(self):
+        return iter(self._hand)
