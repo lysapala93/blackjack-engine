@@ -4,6 +4,64 @@ from itertools import product
 
 
 class Hand:
+    """
+    Represents a blackjack hand for a player or dealer.
+
+    This class manages the cards in a hand, calculates the score, checks for
+    blackjack or bust, and supports additional actions like splitting and revealing.
+    It provides both internal game logic and "visible" methods for display purposes
+    (e.g., showing the dealer's hand with hidden cards).
+
+    Attributes:
+        _owner_hand (str): Name of the hand owner. Always "dealer" for the dealer.
+        _role (str): Role of the hand, either "player" or "dealer".
+        _hand (list[Card]): List of current cards in the hand.
+        _revealed (bool): Indicates whether the dealer's hand has been revealed.
+
+    Properties:
+        role (str): Role of the hand ("player" or "dealer").
+        name (str): Name of the hand owner.
+        score (int): Current blackjack score of the hand.
+        visible_score (int | None): Score visible to the player (accounts for dealer's hidden card).
+        hand (list[Card]): All cards in the hand.
+        visible_hand (list[Card | None]): Cards visible to the player.
+        blackjack (bool): True if the hand is a blackjack (21 with two cards).
+        bust (bool): True if the score exceeds 21.
+        splitting_possible (bool): True if the hand can be split (two cards of the same value).
+
+    Methods:
+        add(card: Card) -> None:
+            Adds a card to the hand.
+
+        discard() -> list[Card]:
+            Empties the hand and returns the cards.
+
+        split() -> tuple[Hand, Hand]:
+            Splits the hand into two new hands, if possible.
+
+        reveal() -> None:
+            Reveals the dealer's hand.
+
+    Magic Methods:
+        __repr__() -> str:
+            Detailed debug representation of the hand.
+
+        __str__() -> str:
+            Player-friendly string representation of the hand.
+
+        __len__() -> int:
+            Returns the number of cards in the hand.
+
+        __contains__(card: Card) -> bool:
+            Checks if a card is in the hand.
+
+        __iter__():
+            Iterates over the cards in the hand.
+
+    Internal Methods:
+        _calculate_score() -> int:
+            Calculates the blackjack score of the hand, accounting for aces.
+    """
 
     def __init__(self, role: str, name: str = None):
 
