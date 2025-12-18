@@ -43,19 +43,27 @@ class Hand:
         if not self._hand:
             return 0
 
-        values = [
-            list(card.value) if isinstance(card.value, tuple) else [card.value]
-            for card in self._hand
-        ]
+    @property
+    def visible_score(self) -> int | None:
+        if self.role == "dealer" and not self._revealed:
+            if not self._hand:
+                return 0
+            value = self._hand[0].value
+            return min(value) if isinstance(value, tuple) else value
 
-        possible_scores = {sum(combo) for combo in product(*values)}
-        valid_scores = [s for s in possible_scores if s <= 21]
-
-        return max(valid_scores) if valid_scores else min(possible_scores)
+        return self.score
 
     @property
-    def hand(self):
-        if self._role == "player":
+    def hand(self) -> list[Card]:
+        return self._hand
+
+    @property
+    def visible_hand(self) -> list[Card | None]:
+        if self._role == "dealer" and not self._revealed:
+            if not self._hand:
+                return []
+            return [self._hand[0], None]
+        else:
             return self._hand
 
     @property
