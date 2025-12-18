@@ -14,8 +14,8 @@ Provides classes for simulating Blackjack games:
 from .card import Card
 from .deck import Deck
 from .hand import Hand
-from .player import Player
-from .dealer import Dealer
+from .player_dealer import Player
+from .player_dealer import Dealer
 from .game import Game
 from .discard_tray import DiscardTray
 
