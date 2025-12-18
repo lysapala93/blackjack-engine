@@ -98,7 +98,7 @@ class Hand:
 
         return cards
 
-    def split(self):
+    def split(self) -> tuple["Hand", "Hand"]:
         if not self.splitting_possible:
             raise ValueError(f"Splitting with hand {self.hand} not possible")
 
