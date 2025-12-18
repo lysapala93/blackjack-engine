@@ -25,7 +25,7 @@ class TestHand:
         for card in cards:
             hand_player.add(card)
 
-        assert hand_player.score == 17
+        assert hand_player.visible_score == 17
 
     def test_draw_from_deck(self):
         hand_player = Hand(role="player", name="Ocean")
@@ -46,9 +46,9 @@ class TestHand:
 
         for card in cards:
             hand_player.add(card)
-        score_before = hand_player.score
+        score_before = hand_player.visible_score
         hand_player.add(Card(suit="Hearts", rank="4"))
-        score_after = hand_player.score
+        score_after = hand_player.visible_score
 
         assert score_before == 18
         assert score_after == 12
@@ -76,7 +76,7 @@ class TestHand:
 
         assert not hand_player.blackjack
         assert not hand_player.bust
-        assert hand_player.score == 21
+        assert hand_player.visible_score == 21
 
     def test_bust(self):
         hand_player = Hand(role="player", name="Ocean")
@@ -115,7 +115,7 @@ class TestHand:
             for hand_player_card in hand_player_cards
         )
         assert first_discard in discard_tray._discard_deck
-        assert hand_player.score == 0
+        assert hand_player.visible_score == 0
         assert not hand_player.blackjack
         assert not hand_player.bust
 
