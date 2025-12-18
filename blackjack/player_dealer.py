@@ -4,7 +4,7 @@ from blackjack import Hand, Deck
 
 class Participiant(ABC):
 
-    def __init__(self, role: str):
+    def __init__(self, role: str, name: str | None = None):
         self._role: str = role
         self._standing: bool = False
         self._hand: Hand = Hand(self._role)
@@ -66,3 +66,9 @@ class Dealer(Participiant):
     @property
     def name(self) -> str:
         return self._name
+
+
+class Player(Participiant):
+    def __init__(self, name: str, starting_budget: int):
+        super().__init__(role="player", name=name)
+        self._budget: int = starting_budget
