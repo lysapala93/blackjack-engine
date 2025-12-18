@@ -30,11 +30,11 @@ class Hand:
 
     @property
     def name(self) -> str:
-        return self._name
+        return self._owner_hand
 
     @name.setter
     def name(self, name) -> None:
-        self._name = name
+        self._owner_hand = name
 
         return None
 
