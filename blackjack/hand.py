@@ -107,3 +107,12 @@ class Hand:
     def reveal(self) -> None:
         self._revealed = True
 
+    def _calculate_score(self) -> int:
+        values = [
+            list(card.value) if isinstance(card.value, tuple) else [card.value]
+            for card in self._hand
+        ]
+        possible_scores = {sum(combo) for combo in product(*values)}
+        valid_scores = [s for s in possible_scores if s <= 21]
+
+        return max(valid_scores) if valid_scores else min(possible_scores)
