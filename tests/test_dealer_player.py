@@ -34,7 +34,7 @@ class TestPlayer:
         deck.set_end_of_shoe()
 
         player = Player(budget=10000, name="Ocean")
-        bet = player.bet(amout=500)
+        bet = player.bet(amount=500)
 
         assert player.budget == 9500
         assert bet == 500
