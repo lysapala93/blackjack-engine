@@ -25,6 +25,11 @@ class TestDealer:
 
         assert dealer.standing is True
 
+    def test_name(self):
+        dealer = Dealer()
+
+        assert dealer.name == "dealer"
+
 
 class TestPlayer:
     def test_bet(self):
@@ -60,3 +65,8 @@ class TestPlayer:
         player.stand()
 
         assert player.standing is True
+
+    def test_name(self):
+        player = Player(starting_budget=10000, name="Ocean")
+
+        assert player.name == "Ocean"
