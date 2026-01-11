@@ -72,3 +72,22 @@ class Player(Participiant):
     def __init__(self, name: str, starting_budget: int):
         super().__init__(role="player", name=name)
         self._budget: int = starting_budget
+    @property
+    def role(self) -> str:
+        return self._role
+
+    @property
+    def standing(self) -> bool:
+        return self._standing
+
+    @property
+    def hand(self) -> "Hand":
+        return self._hand
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def budget(self) -> int:
+        return self._budget
