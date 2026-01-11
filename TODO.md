@@ -34,16 +34,16 @@
 - [ ] Double down support
 
 ## Player Class
-- [ ] Manage own hand (show hand)
-- [ ] Hit (pull a card)
-- [ ] Stand
-- [ ] Split 
-- [ ] Double down
-- [ ] Account handling (bankroll)
+- [X] Manage own hand (show hand)
+- [X] Hit (pull a card)
+- [X] Stand
+- [X] Split 
+- [X] Double down
+- [X] Account handling (bankroll)
 - [ ] Track statistics
 
 ## Dealer Class
-- [ ] Manage own hand (show hand)
+- [X] Manage own hand (show hand)
 - [ ] Follow rules for soft 17
 - [ ] Reveal hidden card after all players have acted
 
