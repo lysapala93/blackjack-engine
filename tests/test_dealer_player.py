@@ -15,6 +15,7 @@ class TestDealer:
             Card(suit="Hearts", rank="2"),
             Card(suit="Hearts", rank="3"),
         ]
+        assert len(deck) == deck.initial_cards - 2
 
     def test_stand(self):
         deck = Deck()
@@ -55,6 +56,7 @@ class TestPlayer:
             Card(suit="Hearts", rank="2"),
             Card(suit="Hearts", rank="3"),
         ]
+        assert len(deck) == deck.initial_cards - 2
 
     def test_stay(self):
         deck = Deck()
