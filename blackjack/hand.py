@@ -96,8 +96,6 @@ class Hand:
     def name(self, name) -> None:
         self._owner_hand = name
 
-        return None
-
     @property
     def score(self) -> int:
         if not self._hand:
@@ -111,7 +109,7 @@ class Hand:
             if not self._hand:
                 return 0
             value = self._hand[0].value
-            return min(value) if isinstance(value, tuple) else value
+            return max(value) if isinstance(value, tuple) else value
 
         return self.score
 
