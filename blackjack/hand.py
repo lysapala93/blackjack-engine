@@ -192,11 +192,11 @@ class Hand:
             str(card) if card else "Hidden" for card in self.visible_hand
         )
 
-        return f"<Hand(owner={self._name}, role={self._role}, cards=[{cards_str}], score={self.visible_score})>"
+        return f"<Hand(owner={self._owner_hand}, role={self._role}, cards=[{cards_str}], score={self.visible_score})>"
 
     def __str__(self) -> str:
         cards_str = ", ".join(str(card) for card in self.visible_hand if card)
-        return f"{self._name}'s Hand: [{cards_str}] Score: {self.visible_score}"
+        return f"{self._owner_hand}'s Hand: [{cards_str}] Score: {self.visible_score}"
 
     def __len__(self) -> int:
         return len(self._hand)
