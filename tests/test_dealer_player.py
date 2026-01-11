@@ -33,7 +33,7 @@ class TestPlayer:
         deck.set_cutcard(randint(0, len(deck)))
         deck.set_end_of_shoe()
 
-        player = Player(budget=10000, name="Ocean")
+        player = Player(starting_budget=10000, name="Ocean")
         bet = player.bet(amount=500)
 
         assert player.budget == 9500
@@ -42,7 +42,7 @@ class TestPlayer:
     def test_hit(self):
         deck = Deck()
 
-        player = Player(budget=10000, name="Ocean")
+        player = Player(starting_budget=10000, name="Ocean")
         for _ in range(2):
             player.hit(deck)
 
@@ -54,7 +54,7 @@ class TestPlayer:
     def test_stay(self):
         deck = Deck()
 
-        player = Player(budget=10000, name="Ocean")
+        player = Player(starting_budget=10000, name="Ocean")
         for _ in range(2):
             player.hit(deck)
         player.stand()
