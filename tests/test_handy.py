@@ -155,17 +155,27 @@ class TestHandDealer:
 
     def test_score(self):
         hand_dealer = Hand(role="dealer")
-        cards = [Card(suit="Spades", rank="Jack"), Card(suit="Spades", rank="Ace")]
+        cards = [Card(suit="Spades", rank="Ace"), Card(suit="Spades", rank="Queen")]
         for card in cards:
             hand_dealer.add(card)
 
-        assert hand_dealer.visible_score == 10
+        assert hand_dealer.visible_score == 11
 
     def test_hand_revealed(self):
         hand_dealer = Hand(role="dealer")
-        cards = [Card(suit="Spades", rank="Jack"), Card(suit="Spades", rank="Ace")]
+        cards = [
+            Card(suit="Spades", rank="Ace"),
+            Card(suit="Spades", rank="6"),
+        ]
+        new_card = Card(suit="Spades", rank="5")
         for card in cards:
             hand_dealer.add(card)
+        assert hand_dealer.visible_score == 11
         hand_dealer.reveal()
+        assert hand_dealer.visible_score == 17
+        hand_dealer.add(new_card)
+        cards.append(new_card)
 
-        assert hand_dealer.hand == cards
+        assert hand_dealer.visible_hand == cards
+        assert hand_dealer.blackjack == False
+        assert hand_dealer.visible_score == 12
