@@ -16,6 +16,7 @@ class TestDealer:
             Card(suit="Hearts", rank="3"),
         ]
         assert len(deck) == deck.initial_cards - 2
+        assert repr(dealer) == f"<Participant(Role={dealer._role}, Hand={dealer.hand})>"
 
     def test_stand(self):
         deck = Deck()
