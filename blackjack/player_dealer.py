@@ -7,7 +7,7 @@ class Participiant(ABC):
     def __init__(self, role: str, name: str | None = None):
         self._role: str = role
         self._standing: bool = False
-        self._hand: Hand = Hand(self._role)
+        self._hand: Hand = Hand(self._role, name)
         self._name: str = self._hand.name
 
     @abstractmethod
