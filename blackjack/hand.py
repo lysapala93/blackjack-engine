@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from blackjack import Card
 from .logger import logger
 from itertools import product
@@ -148,15 +150,13 @@ class Hand:
     def add(self, card: Card) -> None:
         self._hand.append(card)
 
-        return None
-
-    def discard(self) -> None:
+    def discard(self) -> list[Card]:
         cards = self._hand.copy()
         self._hand.clear()
 
         return cards
 
-    def split(self) -> tuple["Hand", "Hand"]:
+    def split(self) -> tuple[Hand, Hand]:
         if not self.splitting_possible:
             raise ValueError(f"Splitting with hand {self.hand} not possible")
 
