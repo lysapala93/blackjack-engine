@@ -71,14 +71,6 @@ class Participant(ABC):
         """Returns the participant's name."""
         return self._name
 
-    # ---------------------------------------------#
-    # Magic Methods                               #
-    # ---------------------------------------------#
-
-    def __repr__(self) -> str:
-        if self._role == "dealer":
-            return f"<Participant(Role={self._role}, Hand={self.hand})>"
-
 
 class Dealer(Participant):
     """
@@ -91,6 +83,9 @@ class Dealer(Participant):
         Initializes a dealer with the role 'dealer'.
         """
         super().__init__(role="dealer")
+
+    def __repr__(self) -> str:
+        return f"<Participant(Role={self._role}, Hand={self._hand})>"
 
 
 class Player(Participant):
@@ -137,4 +132,4 @@ class Player(Participant):
         return self._budget
 
     def __repr__(self):
-        return super().__repr__()
+        return f"<Participant(Name={self._name}, Role={self._role}, Budget={self._budget} Hand={self._hand})>"
