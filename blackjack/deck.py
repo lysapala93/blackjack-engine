@@ -1,5 +1,4 @@
 from .card import Card, SUITS, RANKS
-from .discard_tray import DiscardTray
 from random import shuffle, randint
 from .logger import logger
 
