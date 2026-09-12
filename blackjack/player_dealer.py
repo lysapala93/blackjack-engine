@@ -47,6 +47,10 @@ class Participant(ABC):
         """
         self._standing = True
 
+    def reset_for_new_round(self) -> None:
+        """Clears turn-taking state so the participant can act again next round."""
+        self._standing = False
+
     # ---------------------------------------------#
     # Getters                                     #
     # ---------------------------------------------#
@@ -130,6 +134,17 @@ class Player(Participant):
     def budget(self) -> int:
         """Returns the player's current budget."""
         return self._budget
+
+    def add_winnings(self, amount: int) -> None:
+        """
+        Credits the player's budget with payout winnings (or a returned push/bet).
+
+        Args:
+            amount (int): The amount to credit. Must be >= 0.
+        """
+        if amount < 0:
+            raise ValueError("Winnings amount must be >= 0")
+        self._budget += amount
 
     def __repr__(self):
         return f"<Participant(Name={self._name}, Role={self._role}, Budget={self._budget} Hand={self._hand})>"
