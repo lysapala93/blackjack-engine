@@ -10,3 +10,6 @@ dependencies = [
     "numpy>=2.3.5",
     "pytest>=9.0.1",
 ]
+
+[project.scripts]
+blackjack = "blackjack.cli:main"
