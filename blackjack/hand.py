@@ -135,6 +135,18 @@ class Hand:
         return self.score > 21
 
     @property
+    def soft(self) -> bool:
+        """True if the current best score only stays <= 21 because at
+        least one Ace is being counted as 11 (a "soft" total, e.g. Ace+6)."""
+        if not self._hand:
+            return False
+        hard_total = sum(
+            min(card.value) if isinstance(card.value, tuple) else card.value
+            for card in self._hand
+        )
+        return self.score != hard_total
+
+    @property
     def splitting_possible(self) -> bool:
         return (
             len(self.hand) == 2
@@ -151,6 +163,7 @@ class Hand:
     def discard(self) -> list[Card]:
         cards = self._hand.copy()
         self._hand.clear()
+        self._revealed = False  # reset so a dealer's next hand is hidden again
 
         return cards
 
