@@ -110,6 +110,29 @@ class Deck:
         )
         return None
 
+    def prepare_shoe(
+        self,
+        cut_pos: int | None = None,
+        remaining_min: int = 50,
+        remaining_max: int = 80,
+    ) -> None:
+        """
+        Shuffles the shoe and (re-)applies a cut card and end-of-shoe marker
+        in one step. Call this once when a game starts, and again every time
+        the discard pile has just been collected back into the shoe —
+        otherwise the shoe stays unshuffled and end-of-shoe detection stays
+        permanently disabled after the first reshuffle.
+
+        Args:
+            cut_pos: Fixed cut position. If None, a random position is
+                chosen each call (realistic casino cut).
+        """
+        self.shuffle()
+        if cut_pos is None:
+            cut_pos = randint(1, len(self) - 1)
+        self.set_cutcard(pos=cut_pos)
+        self.set_end_of_shoe(remaining_min=remaining_min, remaining_max=remaining_max)
+
     # ----------------------------------------
     # Magic Methods
     # -----------------------------------------
