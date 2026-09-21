@@ -44,7 +44,7 @@
 
 ## Dealer Class
 - [X] Manage own hand (show hand)
-- [ ] Follow rules for soft 17
+- [X] Follow rules for soft 17
 - [ ] Reveal hidden card after all players have acted
 
 ## Game Class
@@ -55,3 +55,4 @@
 - [ ] Track rounds and statistics
 - [ ] Provide user interface (optional GUI)
 - [ ] Distribution logic: deal first to player, then dealer
+- [ ] Automated stand when score is 21 (Black Jack)

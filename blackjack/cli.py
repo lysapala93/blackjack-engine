@@ -16,11 +16,13 @@ ACTION_KEYS = {
     "h": Action.HIT,
     "s": Action.STAND,
     "d": Action.DOUBLE,
+    "sp": Action.SPLIT,
 }
 ACTION_LABELS = {
     Action.HIT: "(h)it",
     Action.STAND: "(s)tand",
     Action.DOUBLE: "(d)ouble",
+    Action.SPLIT: "(sp)lit",
 }
 
 MIN_BET = 1
