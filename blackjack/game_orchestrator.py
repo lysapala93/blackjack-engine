@@ -38,6 +38,7 @@ class Action(Enum):
     HIT = auto()
     STAND = auto()
     DOUBLE = auto()
+    SPLIT = auto()
     # SPLIT is intentionally not implemented yet: it requires Player to hold
     # multiple concurrent hands instead of a single one. Left as a TODO.
 
@@ -68,6 +69,7 @@ class Game:
         deck_size: int = 6,
         hit_on_soft_17: bool = False,
     ):
+        # TODO: Bet information is now related to the hand because of the case when splitting
         self._players: list[Player] = [
             Player(name, starting_budget=start_budget) for name in players
         ]
@@ -193,6 +195,8 @@ class Game:
         can_afford_double = player.budget >= self._bets[player]
         if len(player.hand) == 2 and can_afford_double:
             actions.append(Action.DOUBLE)
+        if player.hand.splitting_possible and can_afford_double:
+            actions.append(Action.SPLIT)
         return actions
 
     def act(self, action: Action) -> None:
@@ -216,6 +220,11 @@ class Game:
             self._bets[player] += extra
             player.hit(self._deck)
             player.stand()
+
+        elif action == Action.SPLIT:
+            extra = self._bets[player]
+            player.place_bet(extra)
+            self._bets[player] += extra
 
         self._advance_to_next_actor()
 
