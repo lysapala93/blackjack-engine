@@ -23,9 +23,10 @@ class Participant(ABC):
             name (str | None): Optional name of the participant.
         """
         self._role: str = role
+        self._name: str = name
         self._standing: bool = False
-        self._hand: Hand = Hand(role, name)
-        self._name: str = self._hand.name
+        self._hands: list[Hand] = [Hand(role)]
+        self._active_hand: int = 0
 
     # ---------------------------------------------#
     # Core Mechanisms                             #
@@ -39,13 +40,25 @@ class Participant(ABC):
             deck (Deck): The deck from which the card is drawn.
         """
         card = deck.draw()
-        self._hand.add(card)
+        self.active_hand.add(card)
 
     def stand(self) -> None:
         """
         Sets the participant's status to stand (no more cards will be drawn).
         """
         self._standing = True
+
+    def split(self, deck: Deck) -> None:
+        """
+        Splits the hand into two hands and drawing for each hand a new card.
+
+        Args:
+            deck (Deck): The deck from which the card is drawn.
+        """
+        self._hands = self.active_hand.split()
+        for hand in range(1):
+            card = deck.draw()
+            self._hands[hand].add(card)
 
     def reset_for_new_round(self) -> None:
         """Clears turn-taking state so the participant can act again next round."""
@@ -66,14 +79,24 @@ class Participant(ABC):
         return self._standing
 
     @property
-    def hand(self) -> Hand:
-        """Returns the participant's hand."""
-        return self._hand
+    def hands(self) -> list[Hand]:
+        """Returns all hands of the participant."""
+        return self._hands
+
+    @property
+    def active_hand(self) -> Hand:
+        """Returns the active hand"""
+        return self._hands[self._active_hand]
 
     @property
     def name(self) -> str:
         """Returns the participant's name."""
         return self._name
+
+    @active_hand.setter
+    def active_hand(self, hand: int) -> None:
+        """Setter for the active hand."""
+        self._active_hand = hand
 
 
 class Dealer(Participant):
