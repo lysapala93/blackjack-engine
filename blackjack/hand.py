@@ -65,11 +65,11 @@ class Hand:
             Calculates the blackjack score of the hand, accounting for aces.
     """
 
-    def __init__(self, role: str, name: str = None):
+    def __init__(self, role: str):
 
         match role:
             case "player":
-                self._owner_hand: str = name
+                self._owner_hand: str = "player"
 
             case "dealer":
                 self._owner_hand: str = "dealer"
@@ -79,6 +79,7 @@ class Hand:
 
         self._role = role
         self._hand: list[Card] = []
+        self._bet: int = 0
         self._revealed: bool = False
 
     # -----------------------------------------------
@@ -116,6 +117,14 @@ class Hand:
     @property
     def hand(self) -> list[Card]:
         return self._hand
+
+    @property
+    def bet(self) -> int:
+        return self._bet
+
+    @bet.setter
+    def bet(self, bet) -> None:
+        self._bet = bet
 
     @property
     def visible_hand(self) -> list[Card | None]:
@@ -171,8 +180,8 @@ class Hand:
         if not self.splitting_possible:
             raise ValueError(f"Splitting with hand {self.hand} not possible")
 
-        hand_1 = Hand(role="player", name=self._owner_hand)
-        hand_2 = Hand(role="player", name=self._owner_hand)
+        hand_1 = Hand(role="player")
+        hand_2 = Hand(role="player")
 
         hand_1.add(self._hand[0])
         hand_2.add(self._hand[1])
