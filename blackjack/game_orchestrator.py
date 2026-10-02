@@ -208,7 +208,7 @@ class Game:
 
         if action == Action.HIT:
             player.hit(self._deck)
-            if player.hand.bust or player.hand.score == 21:
+            if player.active_hand.bust or player.active_hand.score == 21:
                 player.stand()
 
         elif action == Action.STAND:
