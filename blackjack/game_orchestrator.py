@@ -193,9 +193,9 @@ class Game:
 
         actions = [Action.HIT, Action.STAND]
         can_afford_double = player.budget >= self._bets[player]
-        if len(player.hand) == 2 and can_afford_double:
+        if len(player.active_hand) == 2 and can_afford_double:
             actions.append(Action.DOUBLE)
-        if player.hand.splitting_possible and can_afford_double:
+        if player.active_hand.splitting_possible and can_afford_double:
             actions.append(Action.SPLIT)
         return actions
 
@@ -244,29 +244,29 @@ class Game:
     # Dealer + payout
     # ---------------------------------------------
     def _dealer_phase(self) -> None:
-        self._dealer.hand.reveal()
+        self._dealer.active_hand.reveal()
         # House rules: always hit below 17. If hit_on_soft_17 is enabled,
         # also hit on a soft 17 (e.g. Ace+6) instead of standing on it.
-        while self._dealer.hand.score < 17 or (
+        while self._dealer.active_hand.score < 17 or (
             self._hit_on_soft_17
-            and self._dealer.hand.score == 17
-            and self._dealer.hand.soft
+            and self._dealer.active_hand.score == 17
+            and self._dealer.active_hand.soft
         ):
             self._dealer.hit(self._deck)
         self._dealer.stand()
 
     def _payout_phase(self) -> None:
-        dealer_hand = self._dealer.hand
+        dealer_hand = self._dealer.active_hand
         self._last_round_results = []
         for player in self._players:
             bet = self._bets[player]
-            payout = self._settle(player.hand, dealer_hand, bet)
+            payout = self._settle(player.active_hand, dealer_hand, bet)
             player.add_winnings(payout)
             self._last_round_results.append(
                 RoundResult(
                     player=player,
-                    player_cards=list(player.hand.hand),
-                    player_score=player.hand.score,
+                    player_cards=list(player.active_hand.hand),
+                    player_score=player.active_hand.score,
                     dealer_cards=list(dealer_hand.hand),
                     dealer_score=dealer_hand.score,
                     bet=bet,
@@ -291,8 +291,8 @@ class Game:
 
     def _collect_tray(self) -> None:
         for player in self._players:
-            self._discard_tray.discard(player.hand.discard())
-        self._discard_tray.discard(self._dealer.hand.discard())
+            self._discard_tray.discard(player.active_hand.discard())
+        self._discard_tray.discard(self._dealer.active_hand.discard())
 
         for player in self._players:
             player.reset_for_new_round()

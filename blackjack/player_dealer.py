@@ -112,7 +112,7 @@ class Dealer(Participant):
         super().__init__(role="dealer")
 
     def __repr__(self) -> str:
-        return f"<Participant(Role={self._role}, Hand={self._hand})>"
+        return f"<Participant(Role={self.role}, Hand={self.active_hand})>"
 
 
 class Player(Participant):
