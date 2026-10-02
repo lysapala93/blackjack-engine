@@ -78,9 +78,9 @@ def _run_player_turns(game: Game) -> None:
         player = game.current_actor
         print(f"\n{player.name}'s turn")
         print(
-            f"  Your hand:    {_format_cards(player.hand.hand)} (score: {player.hand.score})"
+            f"  Your hand:    {_format_cards(player.active_hand)} (score: {player.active_hand.score})"
         )
-        print(f"  Dealer shows: {_format_cards(game.dealer.hand.visible_hand)}")
+        print(f"  Dealer shows: {_format_cards(game.dealer.active_hand.visible_hand)}")
 
         actions = game.legal_actions()
         labels = " / ".join(ACTION_LABELS[a] for a in actions)
@@ -93,8 +93,8 @@ def _run_player_turns(game: Game) -> None:
 
         game.act(action)
 
-        if player.hand.bust:
-            print(f"  {player.name} busts with {player.hand.score}!")
+        if player.hands.bust:
+            print(f"  {player.name} busts with {player.active_hand.score}!")
 
 
 def _print_results(game: Game) -> None:
