@@ -93,7 +93,7 @@ def _run_player_turns(game: Game) -> None:
 
         game.act(action)
 
-        if player.hands.bust:
+        if player.active_hand.bust:
             print(f"  {player.name} busts with {player.active_hand.score}!")
 
 
