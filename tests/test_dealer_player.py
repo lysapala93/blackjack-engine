@@ -10,13 +10,16 @@ class TestDealer:
         for _ in range(2):
             dealer.hit(deck)
 
-        assert len(dealer.hand) == 2
-        assert dealer.hand.hand == [
+        assert len(dealer.active_hand) == 2
+        assert dealer.active_hand.hand == [
             Card(suit="Hearts", rank="2"),
             Card(suit="Hearts", rank="3"),
         ]
         assert len(deck) == deck.initial_cards - 2
-        assert repr(dealer) == f"<Participant(Role={dealer._role}, Hand={dealer.hand})>"
+        assert (
+            repr(dealer)
+            == f"<Participant(Role={dealer._role}, Hand={dealer.active_hand})>"
+        )
 
     def test_stand(self):
         deck = Deck()
@@ -30,7 +33,7 @@ class TestDealer:
     def test_name(self):
         dealer = Dealer()
 
-        assert dealer.name == "dealer"
+        assert dealer.role == "dealer"
 
 
 class TestPlayer:
@@ -53,7 +56,7 @@ class TestPlayer:
         for _ in range(2):
             player.hit(deck)
 
-        assert player.hand.hand == [
+        assert player.active_hand.hand == [
             Card(suit="Hearts", rank="2"),
             Card(suit="Hearts", rank="3"),
         ]
