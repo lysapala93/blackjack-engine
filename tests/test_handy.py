@@ -7,7 +7,7 @@ import pytest
 
 class TestHand:
     def test_role(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         hand_dealer = Hand(role="dealer")
 
         assert hand_player.role == "player"
@@ -17,10 +17,10 @@ class TestHand:
         with pytest.raises(
             ValueError, match=r'Unknown role "superman", please use player or dealer'
         ):
-            Hand(role="superman", name="Batman")
+            Hand(role="superman")
 
     def test_value_hand(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         cards = [Card(suit="Spades", rank="7"), Card(suit="Hearts", rank="Jack")]
         for card in cards:
             hand_player.add(card)
@@ -28,7 +28,7 @@ class TestHand:
         assert hand_player.visible_score == 17
 
     def test_draw_from_deck(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         deck = Deck()
 
         deck.shuffle()
@@ -41,7 +41,7 @@ class TestHand:
         assert len(deck) == initial_size - 3
 
     def test_ace_value(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         cards = [Card(suit="Spades", rank="7"), Card(suit="Spades", rank="Ace")]
 
         for card in cards:
@@ -54,7 +54,7 @@ class TestHand:
         assert score_after == 12
 
     def test_blackjack(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         cards = [Card(suit="Spades", rank="Jack"), Card(suit="Spades", rank="Ace")]
 
         for card in cards:
@@ -64,7 +64,7 @@ class TestHand:
         assert not hand_player.bust
 
     def test_twentyone(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         cards = [
             Card(suit="Spades", rank="Jack"),
             Card(suit="Spades", rank="9"),
@@ -79,7 +79,7 @@ class TestHand:
         assert hand_player.visible_score == 21
 
     def test_bust(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         cards = [
             Card(suit="Spades", rank="Jack"),
             Card(suit="Spades", rank="9"),
@@ -93,7 +93,7 @@ class TestHand:
         assert hand_player.bust
 
     def test_discard(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         deck = Deck()
         discard_tray = DiscardTray()
 
@@ -122,7 +122,7 @@ class TestHand:
 
 class TestHandPlayer:
     def test_hand(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         cards = [Card(suit="Spades", rank="7"), Card(suit="Hearts", rank="Ace")]
         for card in cards:
             hand_player.add(card)
@@ -130,7 +130,7 @@ class TestHandPlayer:
         assert hand_player.hand == cards
 
     def test_split(self):
-        hand_player = Hand(role="player", name="Ocean")
+        hand_player = Hand(role="player")
         cards = [Card(suit="Spades", rank="10"), Card(suit="Hearts", rank="Jack")]
         for card in cards:
             hand_player.add(card)

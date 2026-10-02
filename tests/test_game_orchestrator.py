@@ -55,11 +55,11 @@ class TestGameOrchestration:
         game.place_bet(player, 100)
 
         assert game.phase == Phase.PLAYER_TURN
-        assert len(player.hand) == 2
-        assert len(game.dealer.hand) == 2
+        assert len(player.active_hand) == 2
+        assert len(game.dealer.active_hand) == 2
 
         while game.current_actor is not None:
             game.act(Action.STAND)
 
         assert game.phase == Phase.BETTING  # round auto-settled and reset
-        assert len(player.hand) == 0
+        assert len(player.active_hand) == 0
