@@ -10,7 +10,10 @@ lives in game_orchestrator.py, so a future RL agent driver can reuse the
 exact same engine without duplicating rules here.
 """
 
+from collections import Counter
+
 from .game_orchestrator import Game, Action
+from .logger import configure_logging
 
 ACTION_KEYS = {
     "h": Action.HIT,
@@ -76,10 +79,14 @@ def _run_betting(game: Game) -> None:
 def _run_player_turns(game: Game) -> None:
     while game.current_actor is not None:
         player = game.current_actor
-        print(f"\n{player.name}'s turn")
-        print(
-            f"  Your hand:    {_format_cards(player.active_hand)} (score: {player.active_hand.score})"
+        hand = player.active_hand
+        label = (
+            f" (hand {player.hands.index(hand) + 1}/{len(player.hands)})"
+            if len(player.hands) > 1
+            else ""
         )
+        print(f"\n{player.name}'s turn{label}")
+        print(f"  Your hand:    {_format_cards(hand)} (score: {hand.score})")
         print(f"  Dealer shows: {_format_cards(game.dealer.active_hand.visible_hand)}")
 
         actions = game.legal_actions()
@@ -93,8 +100,8 @@ def _run_player_turns(game: Game) -> None:
 
         game.act(action)
 
-        if player.active_hand.bust:
-            print(f"  {player.name} busts with {player.active_hand.score}!")
+        if hand.bust:
+            print(f"  {player.name} busts with {hand.score}!")
 
 
 def _print_results(game: Game) -> None:
@@ -107,6 +114,8 @@ def _print_results(game: Game) -> None:
         f"Dealer: {_format_cards(results[0].dealer_cards)} (score: {results[0].dealer_score})"
     )
 
+    hands_per_player = Counter(result.player.name for result in results)
+
     for result in results:
         if result.net > 0:
             outcome = f"WIN (+{result.net})"
@@ -115,13 +124,18 @@ def _print_results(game: Game) -> None:
         else:
             outcome = f"LOSE ({result.net})"
 
+        name = result.player.name
+        if hands_per_player[name] > 1:
+            name = f"{name} (hand {result.hand_index + 1})"
+
         print(
-            f"  {result.player.name}: {_format_cards(result.player_cards)} "
+            f"  {name}: {_format_cards(result.player_cards)} "
             f"(score: {result.player_score}) -> {outcome} | budget: {result.player.budget}"
         )
 
 
 def main() -> None:
+    configure_logging()
     print("=== Blackjack CLI ===")
     names = _prompt_players()
     budget = _prompt_int(
