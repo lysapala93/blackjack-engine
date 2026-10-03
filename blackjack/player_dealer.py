@@ -24,7 +24,6 @@ class Participant(ABC):
         """
         self._role: str = role
         self._name: str = name
-        self._standing: bool = False
         self._hands: list[Hand] = [Hand(role)]
         self._active_hand: int = 0
 
@@ -46,7 +45,8 @@ class Participant(ABC):
         """
         Sets the participant's status to stand (no more cards will be drawn).
         """
-        self._standing = True
+        self.active_hand.stand = True
+        self._advance_active_hand()
 
     def split(self, deck: Deck) -> None:
         """
@@ -75,8 +75,8 @@ class Participant(ABC):
 
     @property
     def standing(self) -> bool:
-        """Returns whether the participant has chosen to stand."""
-        return self._standing
+        """Returns whether every hand of the participant is finished."""
+        return all(hand.stand for hand in self._hands)
 
     @property
     def hands(self) -> list[Hand]:
@@ -132,7 +132,7 @@ class Player(Participant):
         super().__init__(role="player", name=name)
         self._budget: int = starting_budget
 
-    def place_bet(self, amount: int) -> int:
+    def place_bet(self, amount: int) -> None:
         """
         Places a bet and reduces the player's budget accordingly.
 
@@ -151,7 +151,7 @@ class Player(Participant):
             raise ValueError("Not enough budget to place this bet")
 
         self._budget -= amount
-        return amount
+        self.active_hand.bet += amount
 
     @property
     def budget(self) -> int:
