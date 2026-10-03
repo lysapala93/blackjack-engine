@@ -18,6 +18,9 @@ class Hand:
         _owner_hand (str): Name of the hand owner. Always "dealer" for the dealer.
         _role (str): Role of the hand, either "player" or "dealer".
         _hand (list[Card]): List of current cards in the hand.
+        _bet (int): Chips wagered on this specific hand.
+        _stand (bool): Indicates whether this hand is finished.
+        _from_split (bool): Indicates whether this hand came from a split.
         _revealed (bool): Indicates whether the dealer's hand has been revealed.
 
     Properties:
@@ -27,8 +30,10 @@ class Hand:
         visible_score (int | None): Score visible to the player (accounts for dealer's hidden card).
         hand (list[Card]): All cards in the hand.
         visible_hand (list[Card | None]): Cards visible to the player.
-        blackjack (bool): True if the hand is a blackjack (21 with two cards).
+        blackjack (bool): True if the hand is a blackjack (21 with two cards, not from a split).
         bust (bool): True if the score exceeds 21.
+        stand (bool): True once this hand is finished and takes no more cards.
+        from_split (bool): True if the hand originated from a split.
         splitting_possible (bool): True if the hand can be split (two cards of the same value).
 
     Methods:
@@ -65,7 +70,7 @@ class Hand:
             Calculates the blackjack score of the hand, accounting for aces.
     """
 
-    def __init__(self, role: str):
+    def __init__(self, role: str, bet: int = 0, from_split: bool = False):
 
         match role:
             case "player":
@@ -79,7 +84,9 @@ class Hand:
 
         self._role = role
         self._hand: list[Card] = []
-        self._bet: int = 0
+        self._bet: int = bet
+        self._stand: bool = False
+        self._from_split: bool = from_split
         self._revealed: bool = False
 
     # -----------------------------------------------
@@ -127,6 +134,20 @@ class Hand:
         self._bet = bet
 
     @property
+    def stand(self) -> bool:
+        """True once this hand is finished (stood, busted or doubled)."""
+        return self._stand
+
+    @stand.setter
+    def stand(self, stand: bool) -> None:
+        self._stand = stand
+
+    @property
+    def from_split(self) -> bool:
+        """True if this hand was created by splitting another hand."""
+        return self._from_split
+
+    @property
     def visible_hand(self) -> list[Card | None]:
         if self._role == "dealer" and not self._revealed:
             if not self._hand:
@@ -137,7 +158,8 @@ class Hand:
 
     @property
     def blackjack(self):
-        return len(self.hand) == 2 and self.score == 21
+        # A 21 made from a split hand is a regular 21, not a 3:2 blackjack.
+        return len(self.hand) == 2 and self.score == 21 and not self._from_split
 
     @property
     def bust(self):
@@ -173,6 +195,9 @@ class Hand:
         cards = self._hand.copy()
         self._hand.clear()
         self._revealed = False  # reset so a dealer's next hand is hidden again
+        self._stand = False
+        self._bet = 0
+        self._from_split = False
 
         return cards
 
@@ -180,8 +205,8 @@ class Hand:
         if not self.splitting_possible:
             raise ValueError(f"Splitting with hand {self.hand} not possible")
 
-        hand_1 = Hand(role="player")
-        hand_2 = Hand(role="player")
+        hand_1 = Hand(role="player", bet=self.bet, from_split=True)
+        hand_2 = Hand(role="player", bet=self.bet, from_split=True)
 
         hand_1.add(self._hand[0])
         hand_2.add(self._hand[1])
