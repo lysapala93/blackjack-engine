@@ -1,4 +1,5 @@
 from __future__ import annotations
+from blackjack.logger import logger
 from abc import ABC, abstractmethod
 from blackjack import Hand, Deck
 
@@ -9,8 +10,8 @@ class Participant(ABC):
 
     Attributes:
         _role (str): The participant's role (e.g., "dealer", "player").
-        _standing (bool): Indicates whether the participant has chosen to stand.
-        _hand (Hand): The participant's hand.
+        _hands (list[Hand]): The participant's hands (more than one after a split).
+        _active_hand (int): Index of the hand currently being played.
         _name (str): The participant's name.
     """
 
@@ -43,7 +44,8 @@ class Participant(ABC):
 
     def stand(self) -> None:
         """
-        Sets the participant's status to stand (no more cards will be drawn).
+        Marks the active hand as finished and moves on to the next hand that
+        still needs to be played, if there is one.
         """
         self.active_hand.stand = True
         self._advance_active_hand()
@@ -79,7 +81,7 @@ class Participant(ABC):
             self._active_hand += 1
 
     # ---------------------------------------------#
-    # Getters                                     #
+    # Getters                                      #
     # ---------------------------------------------#
 
     @property
@@ -206,4 +208,4 @@ class Player(Participant):
         self._budget += amount
 
     def __repr__(self):
-        return f"<Participant(Name={self._name}, Role={self._role}, Budget={self._budget} Hand={self._hand})>"
+        return f"<Participant(Name={self._name}, Role={self._role}, Budget={self._budget} Hands={self._hands})>"
