@@ -80,7 +80,6 @@ class Game:
 
         self._game_started: bool = False
         self._phase: Phase = Phase.BETTING
-        self._bets: dict[Player, int] = {}
         self._player_index: int = 0
         self._last_round_results: list[RoundResult] = []
 
@@ -156,13 +155,12 @@ class Game:
             raise ArithmeticError(f"Cannot place a bet during phase {self._phase}")
         if player not in self._players:
             raise ValueError(f"{player} is not part of this game")
-        if player in self._bets:
+        if player.active_hand.bet != 0:
             raise ArithmeticError(f"{player} has already placed a bet this round")
 
         player.place_bet(amount)
-        self._bets[player] = amount
 
-        if len(self._bets) == len(self._players):
+        if all(participant.active_hand.bet != 0 for participant in self.players):
             self._start_round()
 
     # ---------------------------------------------
@@ -192,7 +190,7 @@ class Game:
             return []
 
         actions = [Action.HIT, Action.STAND]
-        can_afford_double = player.budget >= self._bets[player]
+        can_afford_double = player.budget >= player.active_hand.bet
         if len(player.active_hand) == 2 and can_afford_double:
             actions.append(Action.DOUBLE)
         if player.active_hand.splitting_possible and can_afford_double:
@@ -215,23 +213,19 @@ class Game:
             player.stand()
 
         elif action == Action.DOUBLE:
-            extra = self._bets[player]
-            player.place_bet(extra)
-            self._bets[player] += extra
+            player.place_bet(player.active_hand.bet)
             player.hit(self._deck)
             player.stand()
 
         elif action == Action.SPLIT:
-            extra = self._bets[player]
-            player.place_bet(extra)
-            self._bets[player] += extra
+            player.split(self._deck)
+            player.charge(amount=player.active_hand.bet)
 
         self._advance_to_next_actor()
 
     def _advance_to_next_actor(self) -> None:
-        while (
-            self._player_index < len(self._players)
-            and self._players[self._player_index].standing
+        while self._player_index < len(self._players) and all(
+            hand.stand for hand in self._players[self._player_index].hands
         ):
             self._player_index += 1
 
@@ -298,7 +292,6 @@ class Game:
             player.reset_for_new_round()
         self._dealer.reset_for_new_round()
 
-        self._bets.clear()
         self._player_index = 0
 
         if self._deck.end_game:
