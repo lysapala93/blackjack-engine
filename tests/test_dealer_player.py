@@ -44,10 +44,10 @@ class TestPlayer:
         deck.set_end_of_shoe()
 
         player = Player(starting_budget=10000, name="Ocean")
-        bet = player.place_bet(amount=500)
+        player.place_bet(amount=500)
 
         assert player.budget == 9500
-        assert bet == 500
+        assert player.active_hand.bet == 500
 
     def test_hit(self):
         deck = Deck()
