@@ -50,15 +50,19 @@ class Participant(ABC):
 
     def split(self, deck: Deck) -> None:
         """
-        Splits the hand into two hands and drawing for each hand a new card.
+        Splits the active hand into two hands and draws a new card for each.
+
+        The two new hands replace the active hand in place, so a player who
+        splits again later keeps the hands they already hold.
 
         Args:
             deck (Deck): The deck from which the card is drawn.
         """
-        self._hands = self.active_hand.split()
-        for hand in range(1):
-            card = deck.draw()
-            self._hands[hand].add(card)
+        new_hands = list(self.active_hand.split())
+        self._hands[self._active_hand : self._active_hand + 1] = new_hands
+
+        for hand in new_hands:
+            hand.add(deck.draw())
 
     def reset_for_new_round(self) -> None:
         """Clears turn-taking state so the participant can act again next round."""
