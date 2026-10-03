@@ -158,6 +158,28 @@ class Player(Participant):
         """Returns the player's current budget."""
         return self._budget
 
+    def charge(self, amount: int) -> None:
+        """
+        Charges the budget of the player without touching any hand's bet.
+
+        Used for follow-up wagers (e.g. the second hand of a split) where the
+        bet has already been recorded on the hand itself.
+
+        Args:
+            amount (int): The amount to be charged. Must be >= 0.
+
+        Raises:
+            ValueError: If the amount is negative or exceeds the player's budget.
+        """
+        if amount < 0:
+            raise ValueError("Charged amount must be >= 0")
+        if amount > self._budget:
+            raise ValueError("Not enough budget to cover this charge")
+        self._budget -= amount
+        logger.debug(
+            f"Budget was charged by the amount of {amount} (before: {self._budget+amount}; now: {self.budget})"
+        )
+
     def add_winnings(self, amount: int) -> None:
         """
         Credits the player's budget with payout winnings (or a returned push/bet).
