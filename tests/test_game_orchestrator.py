@@ -1,5 +1,6 @@
 from blackjack import *
 from blackjack import Phase, Action
+from blackjack import Card
 import pytest
 
 
@@ -63,3 +64,18 @@ class TestGameOrchestration:
 
         assert game.phase == Phase.BETTING  # round auto-settled and reset
         assert len(player.active_hand) == 0
+
+    def test_splitting(self):
+        game = Game(players=["Danny Ocean"], start_budget=5000)
+        game.deck._deck = 52 * 6 * [Card(suit="Clubs", rank="Queen")]
+        game.start()
+
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        assert game.phase == Phase.PLAYER_TURN
+        assert player.active_hand.hand == 2 * [Card(suit="Clubs", rank="Queen")]
+
+        game.act(Action.SPLIT)
+
+        assert len(player.hands) == 2
