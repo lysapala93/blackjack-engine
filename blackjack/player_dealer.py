@@ -65,8 +65,18 @@ class Participant(ABC):
             hand.add(deck.draw())
 
     def reset_for_new_round(self) -> None:
-        """Clears turn-taking state so the participant can act again next round."""
-        self._standing = False
+        """Clears all hands and turn-taking state so the participant can act
+        again next round."""
+        self._hands = [Hand(self._role)]
+        self._active_hand = 0
+
+    def _advance_active_hand(self) -> None:
+        """Points the participant at the next hand that is still in play."""
+        while (
+            self._active_hand < len(self._hands) - 1
+            and self._hands[self._active_hand].stand
+        ):
+            self._active_hand += 1
 
     # ---------------------------------------------#
     # Getters                                     #
