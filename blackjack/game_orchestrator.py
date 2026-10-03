@@ -39,16 +39,18 @@ class Action(Enum):
     STAND = auto()
     DOUBLE = auto()
     SPLIT = auto()
-    # SPLIT is intentionally not implemented yet: it requires Player to hold
-    # multiple concurrent hands instead of a single one. Left as a TODO.
 
 
 @dataclass
 class RoundResult:
-    """Snapshot of one player's outcome, captured just before hands are
-    discarded, so any driver (CLI or RL agent) can display/reward it."""
+    """Snapshot of one hand's outcome, captured just before hands are
+    discarded, so any driver (CLI or RL agent) can display/reward it.
+
+    A player who split holds several hands, so one round produces one
+    RoundResult per hand; `hand_index` tells them apart."""
 
     player: Player
+    hand_index: int
     player_cards: list[Card]
     player_score: int
     dealer_cards: list[Card]
@@ -256,20 +258,21 @@ class Game:
         dealer_hand = self._dealer.active_hand
         self._last_round_results = []
         for player in self._players:
-            bet = self._bets[player]
-            payout = self._settle(player.active_hand, dealer_hand, bet)
-            player.add_winnings(payout)
-            self._last_round_results.append(
-                RoundResult(
-                    player=player,
-                    player_cards=list(player.active_hand.hand),
-                    player_score=player.active_hand.score,
-                    dealer_cards=list(dealer_hand.hand),
-                    dealer_score=dealer_hand.score,
-                    bet=bet,
-                    payout=payout,
+            for hand_index, hand in enumerate(player.hands):
+                payout = self._settle(hand, dealer_hand, hand.bet)
+                player.add_winnings(payout)
+                self._last_round_results.append(
+                    RoundResult(
+                        player=player,
+                        hand_index=hand_index,
+                        player_cards=list(hand.hand),
+                        player_score=hand.score,
+                        dealer_cards=list(dealer_hand.hand),
+                        dealer_score=dealer_hand.score,
+                        bet=hand.bet,
+                        payout=payout,
+                    )
                 )
-            )
         self._phase = Phase.ROUND_END
 
     @staticmethod
@@ -288,7 +291,8 @@ class Game:
 
     def _collect_tray(self) -> None:
         for player in self._players:
-            self._discard_tray.discard(player.active_hand.discard())
+            for hand in player.hands:
+                self._discard_tray.discard(hand.discard())
         self._discard_tray.discard(self._dealer.active_hand.discard())
 
         for player in self._players:
