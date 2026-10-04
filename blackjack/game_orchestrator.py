@@ -64,6 +64,11 @@ class RoundResult:
     def net(self) -> int:
         return self.payout - self.bet
 
+    @property
+    def player_cards(self) -> list[Card]:
+        """Cards in the saved hand, retained for callers that only need cards."""
+        return list(self.player_hand.hand)
+
 
 class Game:
     def __init__(
