@@ -248,6 +248,14 @@ class Game:
         elif action == Action.SPLIT:
             player.split(self._deck)
             player.charge(amount=player.active_hand.bet)
+            for hand in player.hands:
+                if (
+                    not all(card.rank == "Ace" for card in hand)
+                    and any(card.rank == "Ace" for card in hand)
+                ) or (hand.bust or hand.score == 21):
+                    player.stand()
+                if not self.re_splitting:
+                    player.stand()
 
         self._advance_to_next_actor()
 
