@@ -216,7 +216,11 @@ class Game:
         if len(player.active_hand) == 2 and can_afford_double:
             logger.debug("Player is able to double")
             actions.append(Action.DOUBLE)
-        if player.active_hand.splitting_possible and can_afford_double:
+        if (
+            player.active_hand.splitting_possible
+            and can_afford_double
+            and (len(player.hands) <= self.max_splittings)
+        ):
             logger.debug("Player is able to split")
             actions.append(Action.SPLIT)
         return actions
