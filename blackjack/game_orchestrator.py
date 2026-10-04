@@ -77,10 +77,12 @@ class Game:
         start_budget: int,
         deck_size: int = 6,
         hit_on_soft_17: bool = False,
+        max_splittings: int = 3,
+        re_splitting: bool = True,
     ):
         # TODO: Bet information is now related to the hand because of the case when splitting
         self._players: list[Player] = [
-            Player(name, starting_budget=start_budget) for name in players
+            Player(name=name, starting_budget=start_budget) for name in players
         ]
         self._dealer: Dealer = Dealer()
         self._deck: Deck = Deck(deck_size=deck_size)
@@ -90,6 +92,8 @@ class Game:
         self._game_started: bool = False
         self._phase: Phase = Phase.BETTING
         self._player_index: int = 0
+        self._max_splittings: int = max_splittings
+        self._re_splitting: bool = re_splitting
         self._last_round_results: list[RoundResult] = []
 
     # ---------------------------------------------
@@ -118,6 +122,14 @@ class Game:
     @property
     def phase(self) -> Phase:
         return self._phase
+
+    @property
+    def max_splittings(self) -> int:
+        return self._max_splittings
+
+    @property
+    def re_splitting(self) -> bool:
+        return self._re_splitting
 
     @property
     def current_actor(self) -> Player | None:
