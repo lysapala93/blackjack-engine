@@ -14,8 +14,9 @@ without any game logic being duplicated between the two.
 ## Features
 
 - **Card & Deck Management**: Full card representation (suits, ranks, values, Ace as 1/11). Multi-deck shoe with realistic casino cut-card and end-of-shoe mechanics — the shoe is automatically reshuffled and re-cut once it runs low, mid-game, not just once at startup.
-- **Hand Logic**: Score calculation with soft/hard Ace handling, blackjack/bust detection, split eligibility check, and a `soft` property used for the dealer's soft-17 rule.
-- **Player & Dealer**: Betting, budget/bankroll tracking, hit/stand, double down, and a configurable dealer rule (`hit_on_soft_17`).
+- **Hand Logic**: Score calculation with soft/hard Ace handling, blackjack/bust detection, split eligibility check, per-hand bet and stand state, and a `soft` property used for the dealer's soft-17 rule.
+- **Player & Dealer**: Betting, budget/bankroll tracking, hit/stand, double down, split, and a configurable dealer rule (`hit_on_soft_17`). A participant holds a list of `hands` and plays them one at a time via `active_hand`.
+- **Splitting**: Fully wired into the orchestrator — a player can hold several concurrent hands, each with its own bet. Configurable via `max_splittings` and `re_splitting`; split Aces automatically stand after one card, a 21 made from a split counts as a regular 21 (not a 3:2 blackjack), and each hand is settled separately.
 - **Game Orchestrator**: A `Phase`/`Action` state machine that drives betting → dealing → player turns → dealer turns → payout → reshuffle automatically, only pausing when a player decision is required.
 - **Discard Tray**: Tracks discarded cards and feeds them back into the shoe on reshuffle.
 - **CLI**: Playable terminal interface (`python blackjack.py`) built entirely on the public engine API.
@@ -28,8 +29,8 @@ blackjack-engine/
 ├── blackjack/
 │   ├── card.py              # Card class: suit, rank, value
 │   ├── deck.py               # Deck/shoe: shuffle, cut card, end-of-shoe, prepare_shoe()
-│   ├── hand.py                # Hand: score, soft/bust/blackjack, split
-│   ├── player_dealer.py       # Participant base class + Player and Dealer
+│   ├── hand.py                # Hand: score, soft/bust/blackjack, per-hand bet, split
+│   ├── player_dealer.py       # Participant base class (multi-hand) + Player and Dealer
 │   ├── discard_tray.py        # Discarded-card tracking, feeds back into the shoe
 │   ├── game_orchestrator.py   # Game (state machine), Phase, Action, RoundResult
 │   ├── cli.py                 # Terminal interface, built on the Game API
@@ -70,10 +71,12 @@ python blackjack.py
 uv run blackjack
 ```
 
-You'll be prompted for player name(s) and a starting budget, then for each
-round: a bet, then hit/stand/double decisions (only the actions that are
-currently legal are offered). After each round, results and updated budgets
-are printed and you're asked whether to play another round.
+You'll be prompted for player name(s) and a starting budget, then for the cut
+card position of the new shoe. For each round you then enter a bet, followed by
+hit/stand/double/split decisions (only the actions that are currently legal are
+offered). If you split, each of your hands is played and shown separately. After
+each round, results and updated budgets are printed and you're asked whether to
+play another round.
 
 ## Using the engine programmatically
 
@@ -83,7 +86,14 @@ react when `current_actor` is not `None`.
 ```python
 from blackjack import Game, Action
 
-game = Game(players=["Alice", "Bob"], start_budget=1000, deck_size=6)
+game = Game(
+    players=["Alice", "Bob"],
+    start_budget=1000,
+    deck_size=6,
+    hit_on_soft_17=False,
+    max_splittings=3,     # max number of hands a player may end up with
+    re_splitting=True,    # allow splitting an already-split hand again
+)
 game.start()
 
 for player in game.players:
@@ -91,11 +101,13 @@ for player in game.players:
 
 while game.current_actor is not None:
     actor = game.current_actor
-    legal = game.legal_actions()        # e.g. [Action.HIT, Action.STAND, Action.DOUBLE]
+    hand = actor.active_hand            # the hand currently being played
+    legal = game.legal_actions()        # e.g. [Action.HIT, Action.STAND, Action.DOUBLE, Action.SPLIT]
     game.act(Action.STAND if Action.STAND in legal else legal[0])
 
-for result in game.last_round_results:  # dealer turn + payout already ran automatically
-    print(result.player.name, result.player_score, "->", result.net)
+# dealer turn + payout already ran automatically; one result per hand
+for result in game.last_round_results:
+    print(result.player.name, result.hand_index, result.player_score, "->", result.net)
 ```
 
 ### Working with cards directly
@@ -140,7 +152,20 @@ session, not just before the first round.
 ### Hand (`hand.py`)
 Calculates all possible Ace-adjusted totals and picks the best legal score.
 Exposes `bust`, `blackjack`, `soft` (used for the dealer's optional
-hit-on-soft-17 rule), and `splitting_possible`.
+hit-on-soft-17 rule), `splitting_possible`, plus the per-hand `bet`,
+`stand` and `from_split` state the orchestrator relies on when a player
+holds several hands at once.
+
+### Splitting (`player_dealer.py` + `game_orchestrator.py`)
+`Hand.split()` returns two new hands (each flagged `from_split` and carrying
+a copy of the original bet); `Participant.split()` replaces the active hand
+with them in place and draws one card for each, so a player who splits again
+keeps the hands they already hold. The orchestrator charges the extra wager,
+caps the number of hands with `max_splittings`, honours `re_splitting`, and
+auto-stands split Aces as well as any hand that reaches 21 or busts.
+`current_actor` only advances to the next player once *all* of that player's
+hands are finished, and payout settles every hand individually — producing
+one `RoundResult` per hand, distinguished by `hand_index`.
 
 ## Dependencies
 
@@ -153,10 +178,9 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Roadmap / Known limitations
 
-- **Split**: `Hand.split()` exists, but `Game`/`Player` don't yet manage
-  multiple concurrent hands per player, so `Action.SPLIT` isn't wired up in
-  the orchestrator yet.
 - **Insurance / surrender**: not implemented.
+- **Dealer peek**: the dealer's hole card is only revealed after every player
+  has acted; there is no early blackjack peek.
 - **Broke players in a multi-player game**: currently the whole session ends
   once any player can't afford the next bet, instead of sitting them out.
 - **Reinforcement learning**: the engine's `current_actor` / `legal_actions()`
