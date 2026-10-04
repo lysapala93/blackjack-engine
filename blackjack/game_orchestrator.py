@@ -18,11 +18,13 @@ lets the exact same engine be driven by a human CLI loop or by a
 reinforcement-learning agent loop without any duplicated game logic.
 """
 
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, auto
 
 from .card import Card
 from .deck import Deck
+from .hand import Hand
 from .discard_tray import DiscardTray
 from .player_dealer import Player, Dealer
 from .logger import logger
@@ -51,7 +53,7 @@ class RoundResult:
 
     player: Player
     hand_index: int
-    player_cards: list[Card]
+    player_hand: Hand
     player_score: int
     dealer_cards: list[Card]
     dealer_score: int
@@ -265,7 +267,7 @@ class Game:
                     RoundResult(
                         player=player,
                         hand_index=hand_index,
-                        player_cards=list(hand.hand),
+                        player_hand=deepcopy(hand),
                         player_score=hand.score,
                         dealer_cards=list(dealer_hand.hand),
                         dealer_score=dealer_hand.score,
