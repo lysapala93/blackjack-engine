@@ -82,7 +82,6 @@ class Game:
         re_splitting: bool = True,
         insurance: bool = True,
     ):
-        # TODO: Bet information is now related to the hand because of the case when splitting
         self._players: list[Player] = [
             Player(name=name, starting_budget=start_budget) for name in players
         ]
@@ -192,6 +191,24 @@ class Game:
             self._start_round()
 
     # ---------------------------------------------
+    # Insurance Phase (optional)
+    # ---------------------------------------------
+    # TODO: Implement here the Insurance!
+    def insurance(self, player: Player, amount: int) -> None:
+        if self._phase != Phase.BETTING:
+            raise ArithmeticError(f"Cannot place a bet during phase {self._phase}")
+        if player not in self._players:
+            raise ValueError(f"{player} is not part of this game")
+
+        player.set_insurance(amount)
+
+        if all(
+            participant.active_hand.insurance != None for participant in self.players
+        ):
+            if self.dealer.active_hand.score != 21:
+                self._phase = Phase.PLAYER_TURN
+
+    # ---------------------------------------------
     # Round flow (internal)
     # ---------------------------------------------
     def _phase_deck_preparation(self, pos_cut_card: int) -> None:
@@ -200,7 +217,12 @@ class Game:
 
     def _start_round(self) -> None:
         self._distribute_cards()
-        self._phase = Phase.PLAYER_TURN
+        if (self.insurance is True) and (
+            self.dealer.active_hand.visible_hand[0].rank == "Ace"
+        ):
+            self._phase = Phase.INSURANCE
+        else:
+            self._phase = Phase.PLAYER_TURN
         self._player_index = 0
         self._advance_to_next_actor()
 
@@ -230,11 +252,6 @@ class Game:
         ):
             logger.debug("Player is able to split")
             actions.append(Action.SPLIT)
-        if (self.insurance is True) and (
-            self.dealer.hands[0].visible_hand[0].rank == "Ace"
-        ):
-            logger.debug("Player is able to take an insurance")
-            actions.append(Action.INSURANCE)
         return actions
 
     def act(self, action: Action) -> None:
