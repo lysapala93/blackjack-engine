@@ -41,6 +41,7 @@ class Action(Enum):
     STAND = auto()
     DOUBLE = auto()
     SPLIT = auto()
+    INSURANCE = auto()
 
 
 @dataclass
@@ -79,6 +80,7 @@ class Game:
         hit_on_soft_17: bool = False,
         max_splittings: int = 3,
         re_splitting: bool = True,
+        insurance: bool = True,
     ):
         # TODO: Bet information is now related to the hand because of the case when splitting
         self._players: list[Player] = [
@@ -94,6 +96,7 @@ class Game:
         self._player_index: int = 0
         self._max_splittings: int = max_splittings
         self._re_splitting: bool = re_splitting
+        self._insurance: bool = insurance
         self._last_round_results: list[RoundResult] = []
 
     # ---------------------------------------------
@@ -130,6 +133,10 @@ class Game:
     @property
     def re_splitting(self) -> bool:
         return self._re_splitting
+
+    @property
+    def insurance(self) -> bool:
+        return self._insurance
 
     @property
     def current_actor(self) -> Player | None:
@@ -223,6 +230,11 @@ class Game:
         ):
             logger.debug("Player is able to split")
             actions.append(Action.SPLIT)
+        if (self.insurance is True) and (
+            self.dealer.hands[0].visible_hand[0].rank == "Ace"
+        ):
+            logger.debug("Player is able to take an insurance")
+            actions.append(Action.INSURANCE)
         return actions
 
     def act(self, action: Action) -> None:
