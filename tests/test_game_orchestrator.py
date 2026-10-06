@@ -117,9 +117,7 @@ class TestGameOrchestration:
 
         assert game.phase == Phase.BETTING
         assert len(game.last_round_results) == 3
-        assert [
-            result.player_hand.hand for result in game.last_round_results
-        ] == [
+        assert [result.player_hand.hand for result in game.last_round_results] == [
             [
                 Card(suit="Clubs", rank="Ace"),
                 Card(suit="Clubs", rank="9"),
@@ -136,3 +134,24 @@ class TestGameOrchestration:
         assert all(result.player_hand.stand for result in game.last_round_results)
         assert len(player.hands) == 1
         assert player.hands[0].hand == []
+
+    def test_dealer_peek(self):
+        game = Game(players=["Danny Ocean"], start_budget=10000)
+        manipulated_deck = [
+            Card(suit="Hearts", rank="5"),
+            Card(suit="Diamonds", rank="10"),
+            Card(suit="Spades", rank="10"),
+            Card(suit="Hearts", rank="10"),
+        ]
+
+        manipulated_deck.extend(game.deck._deck)
+        game.deck._deck = manipulated_deck
+
+        game._game_started = True
+        game._deck.set_end_of_shoe(remaining_min=50, remaining_max=80)
+        game._phase = Phase.BETTING
+
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        assert Action.INSURANCE in game.legal_actions()
