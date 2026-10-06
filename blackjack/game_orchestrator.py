@@ -34,6 +34,7 @@ class Phase(Enum):
     BETTING = auto()
     PLAYER_TURN = auto()
     ROUND_END = auto()
+    INSURANCE = auto()
 
 
 class Action(Enum):
@@ -41,7 +42,6 @@ class Action(Enum):
     STAND = auto()
     DOUBLE = auto()
     SPLIT = auto()
-    INSURANCE = auto()
 
 
 @dataclass
@@ -141,7 +141,7 @@ class Game:
     @property
     def current_actor(self) -> Player | None:
         """The player whose decision is currently pending, or None."""
-        if self._phase != Phase.PLAYER_TURN:
+        if self._phase != Phase.PLAYER_TURN or self._phase != Phase.INSURANCE:
             return None
         if self._player_index >= len(self._players):
             return None
