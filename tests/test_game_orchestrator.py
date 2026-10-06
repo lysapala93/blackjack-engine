@@ -139,9 +139,9 @@ class TestGameOrchestration:
         game = Game(players=["Danny Ocean"], start_budget=10000)
         manipulated_deck = [
             Card(suit="Hearts", rank="5"),
-            Card(suit="Diamonds", rank="10"),
+            Card(suit="Diamonds", rank="Ace"),
             Card(suit="Spades", rank="10"),
-            Card(suit="Hearts", rank="10"),
+            Card(suit="Hearts", rank="5"),
         ]
 
         manipulated_deck.extend(game.deck._deck)
