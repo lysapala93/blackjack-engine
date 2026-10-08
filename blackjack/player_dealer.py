@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from blackjack.logger import logger
 from abc import ABC, abstractmethod
 from blackjack import Hand, Deck
