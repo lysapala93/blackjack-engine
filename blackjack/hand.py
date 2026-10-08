@@ -85,6 +85,7 @@ class Hand:
         self._role = role
         self._hand: list[Card] = []
         self._bet: int = bet
+        self._insurance: int | None = None
         self._stand: bool = False
         self._from_split: bool = from_split
         self._revealed: bool = False
@@ -185,6 +186,14 @@ class Hand:
             and self.role == "player"
         )
 
+    @property
+    def insurance(self) -> int | None:
+        return self._insurance
+
+    @insurance.setter
+    def insurance(self, amount: int | None) -> None:
+        self._insurance = amount
+
     # ----------------------------------------------
     # functions
     # ----------------------------------------------
@@ -197,6 +206,7 @@ class Hand:
         self._revealed = False  # reset so a dealer's next hand is hidden again
         self._stand = False
         self._bet = 0
+        self._insurance = None
         self._from_split = False
 
         return cards
