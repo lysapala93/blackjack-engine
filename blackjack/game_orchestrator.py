@@ -204,11 +204,23 @@ class Game:
         """Insurance is at most half of the original bet."""
         return player.active_hand.bet // 2
 
-    def _decide_insurance(self, player: Player, take: bool) -> None:
-        player.take_insurance(self._insurance_stake(player) if take else 0)
+    def take_insurance(self, player: Player, amount: int) -> None:
+        """Place a custom insurance bet (0 declines), up to half the player's
+        bet. Players decide in seating order."""
+        if self._phase != Phase.INSURANCE:
+            raise ArithmeticError(f"Cannot place insurance during phase {self._phase}")
+        if player not in self._players:
+            raise ValueError(f"{player} is not part of this game")
+        if player is not self.current_actor:
+            raise ArithmeticError(f"It is not {player.name}'s turn to decide")
+
+        player.take_insurance(amount)
         self._player_index += 1
         if self._player_index >= len(self._players):
             self._dealer_peek()
+
+    def _decide_insurance(self, player: Player, take: bool) -> None:
+        self.take_insurance(player, self._insurance_stake(player) if take else 0)
 
     def _dealer_peek(self) -> None:
         """Dealer checks the hole card when showing an Ace or a ten-value card.

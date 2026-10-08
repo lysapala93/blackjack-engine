@@ -50,9 +50,15 @@ class TestGameOrchestration:
             game.config(deck_size=5)
 
     def test_first_round(self):
+        # dealer shows a 6, so neither insurance nor a peek happens
         game = Game(players=["Danny Ocean"], start_budget=10000)
         game.start()
-
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank="5"),
+            Card(suit="Diamonds", rank="6"),
+            Card(suit="Spades", rank="7"),
+            Card(suit="Hearts", rank="8"),
+        ]
         player = game.players[0]
         game.place_bet(player, 100)
 
@@ -165,6 +171,20 @@ class TestGameOrchestration:
         game._game_started = True
         game._deck.set_end_of_shoe(remaining_min=50, remaining_max=80)
         return game
+
+    def test_custom_insurance_amount(self):
+        game = self._game_with(
+            [("Hearts", "5"), ("Diamonds", "Ace"), ("Spades", "10"), ("Hearts", "King")]
+        )
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        with pytest.raises(ValueError):
+            game.take_insurance(player, 51)
+        game.take_insurance(player, 20)
+
+        assert game.phase == Phase.BETTING
+        assert player.budget == 940  # insurance 20 pays 60 back, main bet lost
 
     def test_insurance_wins_on_dealer_blackjack(self):
         # player 5, dealer Ace, player 10, dealer King -> dealer blackjack
