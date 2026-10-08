@@ -169,6 +169,29 @@ class Player(Participant):
         self._budget -= amount
         self.active_hand.bet += amount
 
+    def take_insurance(self, amount: int) -> None:
+        """
+        Allows player to take an insurance, when the dealer has an ace as
+        the first open card.
+
+        Args:
+            amount (int): Insurance bet amount
+
+        Raises:
+            ValueError: If the amount is <= 0 or exceeds the player's budget.
+        """
+        if amount < 0:
+            raise ValueError(f"Bet amount must be greater or equal zero")
+        if amount > self._budget:
+            raise ValueError(f"Not enough budget to place this bet")
+        if amount > int(self.active_hand.bet / 2):
+            raise ValueError(
+                f"The maximum allowed insurance bet is {int(self.active_hand.bet / 2)} (set: {amount})"
+            )
+
+        self._budget -= amount
+        self.active_hand.insurance = amount
+
     @property
     def budget(self) -> int:
         """Returns the player's current budget."""
