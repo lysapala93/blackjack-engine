@@ -30,11 +30,15 @@ from .player_dealer import Player, Dealer
 from .logger import logger
 
 
+PEEK_RANKS = ("Ace", "10", "Jack", "Queen", "King")
+
+
 class Phase(Enum):
     BETTING = auto()
     PLAYER_TURN = auto()
     ROUND_END = auto()
     INSURANCE = auto()
+    DEALER_PEEK = auto()
 
 
 class Action(Enum):
@@ -206,6 +210,21 @@ class Game:
         if self._player_index >= len(self._players):
             self._dealer_peek()
 
+    def _dealer_peek(self) -> None:
+        """Dealer checks the hole card when showing an Ace or a ten-value card.
+
+        With a blackjack the round ends immediately (insurance pays 2:1);
+        otherwise insurance is lost and the players' turns begin."""
+        self._phase = Phase.DEALER_PEEK
+        if self._dealer.active_hand.blackjack:
+            logger.info("Dealer has blackjack.")
+            self._finish_round()
+            return
+
+        self._phase = Phase.PLAYER_TURN
+        self._player_index = 0
+        self._advance_to_next_actor()
+
     # ---------------------------------------------
     # Round flow (internal)
     # ---------------------------------------------
@@ -215,14 +234,15 @@ class Game:
 
     def _start_round(self) -> None:
         self._distribute_cards()
-        if (self.insurance is True) and (
-            self.dealer.active_hand.visible_hand[0].rank == "Ace"
-        ):
+        self._player_index = 0
+        up_card = self._dealer.active_hand.visible_hand[0]
+        if self._insurance and up_card.rank == "Ace":
             self._phase = Phase.INSURANCE
+        elif up_card.rank in PEEK_RANKS:
+            self._dealer_peek()
         else:
             self._phase = Phase.PLAYER_TURN
-        self._player_index = 0
-        self._advance_to_next_actor()
+            self._advance_to_next_actor()
 
     def _distribute_cards(self) -> None:
         # Casino order: one card round-robin to each player then the dealer,
@@ -303,9 +323,12 @@ class Game:
             self._player_index += 1
 
         if self._player_index >= len(self._players):
-            self._dealer_phase()
-            self._payout_phase()
-            self._collect_tray()
+            self._finish_round()
+
+    def _finish_round(self) -> None:
+        self._dealer_phase()
+        self._payout_phase()
+        self._collect_tray()
 
     # ---------------------------------------------
     # Dealer + payout
@@ -328,6 +351,9 @@ class Game:
         for player in self._players:
             for hand_index, hand in enumerate(player.hands):
                 payout = self._settle(hand, dealer_hand, hand.bet)
+                insurance = hand.insurance or 0
+                if dealer_hand.blackjack:
+                    payout += insurance * 3  # stake back plus 2:1
                 player.add_winnings(payout)
                 self._last_round_results.append(
                     RoundResult(
@@ -337,7 +363,7 @@ class Game:
                         player_score=hand.score,
                         dealer_cards=list(dealer_hand.hand),
                         dealer_score=dealer_hand.score,
-                        bet=hand.bet,
+                        bet=hand.bet + insurance,
                         payout=payout,
                     )
                 )
@@ -346,6 +372,8 @@ class Game:
     @staticmethod
     def _settle(player_hand, dealer_hand, bet: int) -> int:
         if player_hand.bust:
+            return 0
+        if dealer_hand.blackjack and not player_hand.blackjack:
             return 0
         if player_hand.blackjack and not dealer_hand.blackjack:
             return bet + (bet * 3) // 2  # 3:2 blackjack payout
