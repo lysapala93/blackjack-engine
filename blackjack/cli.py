@@ -20,12 +20,16 @@ ACTION_KEYS = {
     "s": Action.STAND,
     "d": Action.DOUBLE,
     "sp": Action.SPLIT,
+    "i": Action.INSURANCE,
+    "n": Action.DECLINE_INSURANCE,
 }
 ACTION_LABELS = {
     Action.HIT: "(h)it",
     Action.STAND: "(s)tand",
     Action.DOUBLE: "(d)ouble",
     Action.SPLIT: "(sp)lit",
+    Action.INSURANCE: "(i)nsure",
+    Action.DECLINE_INSURANCE: "(n)o insurance",
 }
 
 MIN_BET = 1
