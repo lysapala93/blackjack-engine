@@ -18,6 +18,7 @@ without any game logic being duplicated between the two.
 - **Player & Dealer**: Betting, budget/bankroll tracking, hit/stand, double down, split, and a configurable dealer rule (`hit_on_soft_17`). A participant holds a list of `hands` and plays them one at a time via `active_hand`.
 - **Splitting**: Fully wired into the orchestrator — a player can hold several concurrent hands, each with its own bet. Configurable via `max_splittings` and `re_splitting`; split Aces automatically stand after one card, a 21 made from a split counts as a regular 21 (not a 3:2 blackjack), and each hand is settled separately.
 - **Game Orchestrator**: A `Phase`/`Action` state machine that drives betting → dealing → player turns → dealer turns → payout → reshuffle automatically, only pausing when a player decision is required.
+- **Insurance & Dealer Peek**: When the dealer shows an Ace (and `insurance=True`), each player may take insurance of up to half their bet (`Action.INSURANCE` for the maximum, `Action.DECLINE_INSURANCE`, or `game.take_insurance(player, amount)` for a custom amount). The dealer then peeks at the hole card when showing an Ace or a ten-value card: on blackjack the round ends immediately (insurance pays 2:1, a player blackjack pushes, everything else loses); otherwise insurance is forfeited and play continues.
 - **Discard Tray**: Tracks discarded cards and feeds them back into the shoe on reshuffle.
 - **CLI**: Playable terminal interface (`python blackjack.py`) built entirely on the public engine API.
 - **Logging**: Structured logging for debugging and monitoring shoe/game state.
@@ -74,7 +75,8 @@ uv run blackjack
 You'll be prompted for player name(s) and a starting budget, then for the cut
 card position of the new shoe. For each round you then enter a bet, followed by
 hit/stand/double/split decisions (only the actions that are currently legal are
-offered). If you split, each of your hands is played and shown separately. After
+offered). If the dealer shows an Ace you are first asked whether to take
+insurance (`i`) or not (`n`). If you split, each of your hands is played and shown separately. After
 each round, results and updated budgets are printed and you're asked whether to
 play another round.
 
@@ -93,6 +95,7 @@ game = Game(
     hit_on_soft_17=False,
     max_splittings=3,     # max number of hands a player may end up with
     re_splitting=True,    # allow splitting an already-split hand again
+    insurance=True,       # offer insurance when the dealer shows an Ace
 )
 game.start()
 
@@ -103,6 +106,7 @@ while game.current_actor is not None:
     actor = game.current_actor
     hand = actor.active_hand            # the hand currently being played
     legal = game.legal_actions()        # e.g. [Action.HIT, Action.STAND, Action.DOUBLE, Action.SPLIT]
+                                        # or [Action.INSURANCE, Action.DECLINE_INSURANCE] in Phase.INSURANCE
     game.act(Action.STAND if Action.STAND in legal else legal[0])
 
 # dealer turn + payout already ran automatically; one result per hand
@@ -133,8 +137,10 @@ uv run pytest tests/test_game_orchestrator.py   # a single file
 ## Architecture
 
 ### Phase state machine (`game_orchestrator.py`)
-`Game` moves through `Phase.BETTING → Phase.PLAYER_TURN → Phase.ROUND_END →
-Phase.BETTING`. Only three calls are needed to drive it end to end:
+`Game` moves through `Phase.BETTING → [Phase.INSURANCE →] [Phase.DEALER_PEEK →]
+Phase.PLAYER_TURN → Phase.ROUND_END → Phase.BETTING`. The insurance phase only
+occurs when the dealer shows an Ace; the peek happens for an Ace or ten-value
+up-card and, if the dealer has blackjack, skips straight to payout. Only three calls are needed to drive it end to end:
 `place_bet()`, `act()`, and reading `current_actor`/`legal_actions()` in
 between. Dealing, the dealer's turn, payout, and shoe reshuffling all happen
 automatically inside these calls — there is no hidden `while True` loop and
@@ -178,9 +184,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Roadmap / Known limitations
 
-- **Insurance / surrender**: not implemented.
-- **Dealer peek**: the dealer's hole card is only revealed after every player
-  has acted; there is no early blackjack peek.
+- **Surrender**: not implemented.
 - **Broke players in a multi-player game**: currently the whole session ends
   once any player can't afford the next bet, instead of sitting them out.
 - **Reinforcement learning**: the engine's `current_actor` / `legal_actions()`
