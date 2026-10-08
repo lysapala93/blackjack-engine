@@ -42,6 +42,8 @@ class Action(Enum):
     STAND = auto()
     DOUBLE = auto()
     SPLIT = auto()
+    INSURANCE = auto()
+    DECLINE_INSURANCE = auto()
 
 
 @dataclass
@@ -140,7 +142,7 @@ class Game:
     @property
     def current_actor(self) -> Player | None:
         """The player whose decision is currently pending, or None."""
-        if self._phase != Phase.PLAYER_TURN or self._phase != Phase.INSURANCE:
+        if self._phase not in (Phase.PLAYER_TURN, Phase.INSURANCE):
             return None
         if self._player_index >= len(self._players):
             return None
@@ -191,22 +193,18 @@ class Game:
             self._start_round()
 
     # ---------------------------------------------
-    # Insurance Phase (optional)
+    # Insurance + dealer peek
     # ---------------------------------------------
-    # TODO: Implement here the Insurance!
-    def insurance(self, player: Player, amount: int) -> None:
-        if self._phase != Phase.BETTING:
-            raise ArithmeticError(f"Cannot place a bet during phase {self._phase}")
-        if player not in self._players:
-            raise ValueError(f"{player} is not part of this game")
+    @staticmethod
+    def _insurance_stake(player: Player) -> int:
+        """Insurance is at most half of the original bet."""
+        return player.active_hand.bet // 2
 
-        player.set_insurance(amount)
-
-        if all(
-            participant.active_hand.insurance != None for participant in self.players
-        ):
-            if self.dealer.active_hand.score != 21:
-                self._phase = Phase.PLAYER_TURN
+    def _decide_insurance(self, player: Player, take: bool) -> None:
+        player.take_insurance(self._insurance_stake(player) if take else 0)
+        self._player_index += 1
+        if self._player_index >= len(self._players):
+            self._dealer_peek()
 
     # ---------------------------------------------
     # Round flow (internal)
@@ -239,6 +237,12 @@ class Game:
         if player is None:
             return []
 
+        if self._phase == Phase.INSURANCE:
+            stake = self._insurance_stake(player)
+            if stake > 0 and player.budget >= stake:
+                return [Action.INSURANCE, Action.DECLINE_INSURANCE]
+            return [Action.DECLINE_INSURANCE]
+
         actions = [Action.HIT, Action.STAND]
         can_afford_double = player.budget >= player.active_hand.bet
         logger.debug(f"Player {player.name} can affort double: {can_afford_double}")
@@ -260,6 +264,10 @@ class Game:
             raise ArithmeticError("No decision is pending right now.")
         if action not in self.legal_actions():
             raise ValueError(f"Action {action} is not legal right now.")
+
+        if action in (Action.INSURANCE, Action.DECLINE_INSURANCE):
+            self._decide_insurance(player, take=action == Action.INSURANCE)
+            return
 
         if action == Action.HIT:
             player.hit(self._deck)
