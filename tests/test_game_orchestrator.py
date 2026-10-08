@@ -155,3 +155,68 @@ class TestGameOrchestration:
         game.place_bet(player, 100)
 
         assert Action.INSURANCE in game.legal_actions()
+
+    @staticmethod
+    def _game_with(cards: list[tuple[str, str]]) -> Game:
+        game = Game(players=["Danny Ocean"], start_budget=1000)
+        stacked = [Card(suit=suit, rank=rank) for suit, rank in cards]
+        stacked.extend(game.deck._deck)
+        game.deck._deck = stacked
+        game._game_started = True
+        game._deck.set_end_of_shoe(remaining_min=50, remaining_max=80)
+        return game
+
+    def test_insurance_wins_on_dealer_blackjack(self):
+        # player 5, dealer Ace, player 10, dealer King -> dealer blackjack
+        game = self._game_with(
+            [("Hearts", "5"), ("Diamonds", "Ace"), ("Spades", "10"), ("Hearts", "King")]
+        )
+        player = game.players[0]
+        game.place_bet(player, 100)
+        assert game.phase == Phase.INSURANCE
+
+        game.act(Action.INSURANCE)
+
+        assert game.phase == Phase.BETTING
+        assert player.budget == 1000  # main bet lost, insurance paid 2:1
+        assert game.last_round_results[0].net == -100 + 100
+
+    def test_insurance_lost_without_dealer_blackjack(self):
+        game = self._game_with(
+            [("Hearts", "5"), ("Diamonds", "Ace"), ("Spades", "10"), ("Hearts", "6")]
+        )
+        player = game.players[0]
+        game.place_bet(player, 100)
+        game.act(Action.INSURANCE)
+
+        assert game.phase == Phase.PLAYER_TURN
+        assert player.budget == 850  # 100 bet + 50 insurance
+        assert Action.INSURANCE not in game.legal_actions()
+
+    def test_peek_on_ten_card_ends_round_without_insurance(self):
+        game = self._game_with(
+            [("Hearts", "5"), ("Diamonds", "King"), ("Spades", "10"), ("Hearts", "Ace")]
+        )
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        assert game.phase == Phase.BETTING
+        assert player.budget == 900
+
+    def test_peek_on_ten_card_continues_without_blackjack(self):
+        game = self._game_with(
+            [("Hearts", "5"), ("Diamonds", "King"), ("Spades", "10"), ("Hearts", "7")]
+        )
+        game.place_bet(game.players[0], 100)
+
+        assert game.phase == Phase.PLAYER_TURN
+
+    def test_player_blackjack_pushes_dealer_blackjack(self):
+        game = self._game_with(
+            [("Hearts", "Ace"), ("Diamonds", "King"), ("Spades", "10"), ("Hearts", "Ace")]
+        )
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        assert game.phase == Phase.BETTING
+        assert player.budget == 1000
