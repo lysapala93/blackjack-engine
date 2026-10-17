@@ -86,6 +86,7 @@ class Hand:
         self._hand: list[Card] = []
         self._bet: int = bet
         self._insurance: int | None = None
+        self._even_money: bool = False
         self._stand: bool = False
         self._from_split: bool = from_split
         self._revealed: bool = False
@@ -131,8 +132,16 @@ class Hand:
         return self._bet
 
     @bet.setter
-    def bet(self, bet) -> None:
+    def bet(self, bet: int) -> None:
         self._bet = bet
+
+    @property
+    def even_money(self) -> bool:
+        return self._even_money
+
+    @even_money.setter
+    def even_money(self, flag: bool) -> None:
+        self._even_money = flag
 
     @property
     def stand(self) -> bool:
@@ -207,6 +216,7 @@ class Hand:
         self._stand = False
         self._bet = 0
         self._insurance = None
+        self._even_money = False
         self._from_split = False
 
         return cards
