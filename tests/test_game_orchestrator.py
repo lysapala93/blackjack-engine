@@ -240,3 +240,43 @@ class TestGameOrchestration:
 
         assert game.phase == Phase.BETTING
         assert player.budget == 1000
+
+
+class TestBetLimits:
+
+    @pytest.mark.parametrize("amount", [19, 1001])
+    def test_bet_outside_limits_raises(self, amount):
+        game = Game(players=["Danny Ocean"], start_budget=5000, min_bet=20, max_bet=1000)
+        game.start()
+        player = game.players[0]
+
+        with pytest.raises(ValueError):
+            game.place_bet(player, amount)
+
+        assert player.budget == 5000
+        assert player.active_hand.bet == 0
+        assert game.phase == Phase.BETTING
+
+    @pytest.mark.parametrize("amount", [20, 1000])
+    def test_bet_on_limits_is_accepted(self, amount):
+        game = Game(players=["Danny Ocean"], start_budget=5000, min_bet=20, max_bet=1000)
+        game.start()
+        # dealer shows a 6: no insurance/peek, so the round waits for the player
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank="5"),
+            Card(suit="Diamonds", rank="6"),
+            Card(suit="Spades", rank="7"),
+            Card(suit="Hearts", rank="8"),
+        ]
+        player = game.players[0]
+
+        game.place_bet(player, amount)
+
+        assert game.phase == Phase.PLAYER_TURN
+        assert player.active_hand.bet == amount
+        assert player.budget == 5000 - amount
+
+    @pytest.mark.parametrize("min_bet, max_bet", [(0, 100), (-5, 100), (200, 100)])
+    def test_invalid_limits_raise(self, min_bet, max_bet):
+        with pytest.raises(ValueError):
+            Game(players=["Danny Ocean"], start_budget=5000, min_bet=min_bet, max_bet=max_bet)
