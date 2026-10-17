@@ -82,6 +82,8 @@ class Game:
         self,
         players: list[str],
         start_budget: int,
+        min_bet: int = 20,
+        max_bet: int = 1000,
         deck_size: int = 6,
         hit_on_soft_17: bool = False,
         max_splittings: int = 3,
@@ -93,6 +95,8 @@ class Game:
         ]
         self._dealer: Dealer = Dealer()
         self._deck: Deck = Deck(deck_size=deck_size)
+        self._min_bet: int = min_bet
+        self._max_bet: int = max_bet
         self._discard_tray: DiscardTray = DiscardTray()
         self._hit_on_soft_17: bool = hit_on_soft_17
 
@@ -118,6 +122,14 @@ class Game:
     @property
     def deck(self) -> Deck:
         return self._deck
+
+    @property
+    def min_bet(self) -> int:
+        return self._min_bet
+
+    @property
+    def max_bet(self) -> int:
+        return self._max_bet
 
     @property
     def discard_tray(self) -> DiscardTray:
