@@ -233,7 +233,12 @@ class TestGameOrchestration:
 
     def test_player_blackjack_pushes_dealer_blackjack(self):
         game = self._game_with(
-            [("Hearts", "Ace"), ("Diamonds", "King"), ("Spades", "10"), ("Hearts", "Ace")]
+            [
+                ("Hearts", "Ace"),
+                ("Diamonds", "King"),
+                ("Spades", "10"),
+                ("Hearts", "Ace"),
+            ]
         )
         player = game.players[0]
         game.place_bet(player, 100)
@@ -246,7 +251,9 @@ class TestBetLimits:
 
     @pytest.mark.parametrize("amount", [19, 1001])
     def test_bet_outside_limits_raises(self, amount):
-        game = Game(players=["Danny Ocean"], start_budget=5000, min_bet=20, max_bet=1000)
+        game = Game(
+            players=["Danny Ocean"], start_budget=5000, min_bet=20, max_bet=1000
+        )
         game.start()
         player = game.players[0]
 
@@ -259,7 +266,9 @@ class TestBetLimits:
 
     @pytest.mark.parametrize("amount", [20, 1000])
     def test_bet_on_limits_is_accepted(self, amount):
-        game = Game(players=["Danny Ocean"], start_budget=5000, min_bet=20, max_bet=1000)
+        game = Game(
+            players=["Danny Ocean"], start_budget=5000, min_bet=20, max_bet=1000
+        )
         game.start()
         # dealer shows a 6: no insurance/peek, so the round waits for the player
         game.deck._deck[:0] = [
@@ -279,14 +288,21 @@ class TestBetLimits:
     @pytest.mark.parametrize("min_bet, max_bet", [(0, 100), (-5, 100), (200, 100)])
     def test_invalid_limits_raise(self, min_bet, max_bet):
         with pytest.raises(ValueError):
-            Game(players=["Danny Ocean"], start_budget=5000, min_bet=min_bet, max_bet=max_bet)
+            Game(
+                players=["Danny Ocean"],
+                start_budget=5000,
+                min_bet=min_bet,
+                max_bet=max_bet,
+            )
 
 
 class TestRoundRules:
 
     @staticmethod
     def _game_with(cards: list[str], **kwargs) -> Game:
-        game = Game(players=["Danny Ocean"], start_budget=5000, insurance=False, **kwargs)
+        game = Game(
+            players=["Danny Ocean"], start_budget=5000, insurance=False, **kwargs
+        )
         game.start()
         game.deck._deck[:0] = [Card(suit="Hearts", rank=rank) for rank in cards]
         return game
@@ -325,7 +341,9 @@ class TestRoundRules:
         assert Action.SPLIT not in game.legal_actions()
 
     def test_max_splittings_caps_number_of_hands(self):
-        game = self._game_with(["8", "5", "8", "9", "8", "8", "8", "8"], max_splittings=2)
+        game = self._game_with(
+            ["8", "5", "8", "9", "8", "8", "8", "8"], max_splittings=2
+        )
         player = game.players[0]
         game.place_bet(player, 100)
 
@@ -333,3 +351,61 @@ class TestRoundRules:
 
         assert len(player.hands) == 2
         assert Action.SPLIT not in game.legal_actions()
+
+
+class TestEvenMoney:
+
+    @staticmethod
+    def _game_with(cards: list[str], **kwargs) -> Game:
+        # deal order: player, dealer, player, dealer (dealer up-card is cards[1])
+        game = Game(players=["Danny Ocean"], start_budget=5000, **kwargs)
+        game.start()
+        game.deck._deck[:0] = [Card(suit="Hearts", rank=rank) for rank in cards]
+        return game
+
+    def test_even_money_offered_for_blackjack_against_dealer_ace(self):
+        game = self._game_with(["Ace", "Ace", "King", "7"])
+        game.place_bet(game.players[0], 100)
+
+        assert game.current_actor is game.players[0]
+        assert Action.EVEN_MONEY in game.legal_actions()
+
+    def test_even_money_pays_one_to_one_when_dealer_has_blackjack(self):
+        game = self._game_with(["Ace", "Ace", "King", "Queen"])
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        game.act(Action.EVEN_MONEY)
+
+        assert game.phase == Phase.BETTING
+        assert player.budget == 5000 + 100
+        assert game.last_round_results[0].net == 100
+
+    def test_even_money_pays_one_to_one_when_dealer_has_no_blackjack(self):
+        game = self._game_with(["Ace", "Ace", "King", "7"])
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        game.act(Action.EVEN_MONEY)
+
+        assert game.phase == Phase.BETTING
+        assert player.budget == 5000 + 100
+        assert game.last_round_results[0].net == 100
+
+    def test_even_money_offered_when_insurance_is_disabled(self):
+        game = self._game_with(["Ace", "Ace", "King", "7"], insurance=False)
+        game.place_bet(game.players[0], 100)
+
+        assert Action.EVEN_MONEY in game.legal_actions()
+
+    def test_even_money_not_offered_when_disabled(self):
+        game = self._game_with(["Ace", "Ace", "King", "7"], even_money=False)
+        game.place_bet(game.players[0], 100)
+
+        assert Action.EVEN_MONEY not in game.legal_actions()
+
+    def test_even_money_not_offered_without_player_blackjack(self):
+        game = self._game_with(["9", "Ace", "King", "7"])
+        game.place_bet(game.players[0], 100)
+
+        assert Action.EVEN_MONEY not in game.legal_actions()
