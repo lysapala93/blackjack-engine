@@ -85,6 +85,7 @@ class Game:
         max_bet: int = 1000,
         deck_size: int = 6,
         hit_on_soft_17: bool = False,
+        even_money: bool = True,
         max_splittings: int = 3,
         re_splitting: bool = True,
         insurance: bool = True,
@@ -105,6 +106,7 @@ class Game:
         self._max_bet: int = max_bet
         self._discard_tray: DiscardTray = DiscardTray()
         self._hit_on_soft_17: bool = hit_on_soft_17
+        self._even_money: bool = even_money
 
         self._game_started: bool = False
         self._phase: Phase = Phase.BETTING
@@ -136,6 +138,10 @@ class Game:
     @property
     def max_bet(self) -> int:
         return self._max_bet
+
+    @property
+    def even_money(self) -> bool:
+        return self._even_money
 
     @property
     def discard_tray(self) -> DiscardTray:
