@@ -250,6 +250,30 @@ class Game:
     def _decide_insurance(self, player: Player, take: bool) -> None:
         self.take_insurance(player, self._insurance_stake(player) if take else 0)
 
+    def _take_even_money(self, player: Player) -> None:
+        """Even money: a player blackjack against a dealer Ace is settled 1:1
+        regardless of the dealer's hole card."""
+        player.active_hand.even_money = True
+        self._player_index += 1
+        self._advance_insurance_actor()
+
+    def _can_take_even_money(self, player: Player) -> bool:
+        return self._even_money and player.active_hand.blackjack
+
+    def _has_insurance_decision(self, player: Player) -> bool:
+        return self._insurance or self._can_take_even_money(player)
+
+    def _advance_insurance_actor(self) -> None:
+        """Skips players without an insurance/even money decision and lets the
+        dealer peek once every player has decided."""
+        while self._player_index < len(self._players) and not (
+            self._has_insurance_decision(self._players[self._player_index])
+        ):
+            self._player_index += 1
+
+        if self._player_index >= len(self._players):
+            self._dealer_peek()
+
     def _dealer_peek(self) -> None:
         """Dealer checks the hole card when showing an Ace or a ten-value card.
 
