@@ -280,3 +280,56 @@ class TestBetLimits:
     def test_invalid_limits_raise(self, min_bet, max_bet):
         with pytest.raises(ValueError):
             Game(players=["Danny Ocean"], start_budget=5000, min_bet=min_bet, max_bet=max_bet)
+
+
+class TestRoundRules:
+
+    @staticmethod
+    def _game_with(cards: list[str], **kwargs) -> Game:
+        game = Game(players=["Danny Ocean"], start_budget=5000, insurance=False, **kwargs)
+        game.start()
+        game.deck._deck[:0] = [Card(suit="Hearts", rank=rank) for rank in cards]
+        return game
+
+    def test_natural_blackjack_needs_no_action(self):
+        # player: Ace + King, dealer: 5 + 9 -> 14, draws a 10 and busts
+        game = self._game_with(["Ace", "5", "King", "9", "10"])
+        player = game.players[0]
+
+        game.place_bet(player, 100)
+
+        assert game.current_actor is None
+        assert game.phase == Phase.BETTING
+        assert player.budget == 5000 + 150
+
+    def test_split_without_resplitting_hands_are_playable(self):
+        # player: 8 + 8, dealer: 5 + 9, split cards: 2, 3
+        game = self._game_with(["8", "5", "8", "9", "2", "3"], re_splitting=False)
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        game.act(Action.SPLIT)
+
+        assert game.phase == Phase.PLAYER_TURN
+        assert len(player.hands) == 2
+        assert not any(hand.stand for hand in player.hands)
+        assert Action.HIT in game.legal_actions()
+
+    def test_no_resplit_when_re_splitting_disabled(self):
+        # player: 8 + 8, dealer: 5 + 9, first split hand draws another 8
+        game = self._game_with(["8", "5", "8", "9", "8", "3"], re_splitting=False)
+        game.place_bet(game.players[0], 100)
+
+        game.act(Action.SPLIT)
+
+        assert Action.SPLIT not in game.legal_actions()
+
+    def test_max_splittings_caps_number_of_hands(self):
+        game = self._game_with(["8", "5", "8", "9", "8", "8", "8", "8"], max_splittings=2)
+        player = game.players[0]
+        game.place_bet(player, 100)
+
+        game.act(Action.SPLIT)
+
+        assert len(player.hands) == 2
+        assert Action.SPLIT not in game.legal_actions()
