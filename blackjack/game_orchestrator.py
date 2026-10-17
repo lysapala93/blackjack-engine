@@ -90,6 +90,13 @@ class Game:
         re_splitting: bool = True,
         insurance: bool = True,
     ):
+        if min_bet <= 0:
+            raise ValueError(f"min_bet must be greater than zero (is {min_bet})")
+        if min_bet > max_bet:
+            raise ValueError(
+                f"min_bet ({min_bet}) must not be greater than max_bet ({max_bet})"
+            )
+
         self._players: list[Player] = [
             Player(name=name, starting_budget=start_budget) for name in players
         ]
@@ -202,6 +209,10 @@ class Game:
             raise ValueError(f"{player} is not part of this game")
         if player.active_hand.bet != 0:
             raise ArithmeticError(f"{player} has already placed a bet this round")
+        if (amount < self.min_bet) or (amount > self.max_bet):
+            raise ValueError(
+                f"Bet must be between {self.min_bet} and {self.max_bet} (is {amount})"
+            )
 
         player.place_bet(amount)
 
