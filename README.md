@@ -91,6 +91,8 @@ from blackjack import Game, Action
 game = Game(
     players=["Alice", "Bob"],
     start_budget=1000,
+    min_bet=20,           # table minimum; place_bet() raises ValueError outside [min_bet, max_bet]
+    max_bet=1000,         # table maximum
     deck_size=6,
     hit_on_soft_17=False,
     max_splittings=3,     # max number of hands a player may end up with
