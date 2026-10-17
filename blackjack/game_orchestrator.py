@@ -29,7 +29,6 @@ from .discard_tray import DiscardTray
 from .player_dealer import Player, Dealer
 from .logger import logger
 
-
 PEEK_RANKS = ("Ace", "10", "Jack", "Queen", "King")
 
 
@@ -287,6 +286,19 @@ class Game:
                 player.hit(self._deck)
             self._dealer.hit(self._deck)
 
+        # A natural blackjack is final: the player takes no further action.
+        for player in self._players:
+            if player.active_hand.blackjack:
+                player.stand()
+
+    def _can_split(self, player: Player, hand: Hand) -> bool:
+        return (
+            hand.splitting_possible
+            and player.budget >= hand.bet
+            and len(player.hands) < self.max_splittings
+            and (self.re_splitting or not hand.from_split)
+        )
+
     def legal_actions(self) -> list[Action]:
         player = self.current_actor
         if player is None:
@@ -304,11 +316,7 @@ class Game:
         if len(player.active_hand) == 2 and can_afford_double:
             logger.debug("Player is able to double")
             actions.append(Action.DOUBLE)
-        if (
-            player.active_hand.splitting_possible
-            and can_afford_double
-            and (len(player.hands) <= self.max_splittings)
-        ):
+        if self._can_split(player, player.active_hand):
             logger.debug("Player is able to split")
             actions.append(Action.SPLIT)
         return actions
@@ -341,13 +349,17 @@ class Game:
             player.split(self._deck)
             player.charge(amount=player.active_hand.bet)
             for hand in player.hands:
+                if hand.stand:
+                    continue
+                # Split Aces get exactly one card each; an Ace pair stays open
+                # only while it may still be re-split.
+                split_aces = hand.hand[0].rank == "Ace"
                 if (
-                    not all(card.rank == "Ace" for card in hand)
-                    and any(card.rank == "Ace" for card in hand)
-                ) or (hand.bust or hand.score == 21):
-                    player.stand()
-                if not self.re_splitting:
-                    player.stand()
+                    split_aces and not self._can_split(player, hand)
+                ) or hand.score == 21:
+                    hand.stand = True
+            if player.active_hand.stand:
+                player.stand()  # moves on to the next unfinished hand
 
         self._advance_to_next_actor()
 
