@@ -47,6 +47,7 @@ class Action(Enum):
     SPLIT = auto()
     INSURANCE = auto()
     DECLINE_INSURANCE = auto()
+    EVEN_MONEY = auto()
 
 
 @dataclass
@@ -225,7 +226,7 @@ class Game:
             self._start_round()
 
     # ---------------------------------------------
-    # Insurance + dealer peek
+    # Insurance + Even Money + dealer peek
     # ---------------------------------------------
     @staticmethod
     def _insurance_stake(player: Player) -> int:
@@ -241,11 +242,12 @@ class Game:
             raise ValueError(f"{player} is not part of this game")
         if player is not self.current_actor:
             raise ArithmeticError(f"It is not {player.name}'s turn to decide")
+        if amount > 0 and not self._insurance:
+            raise ArithmeticError("Insurance is disabled for this game")
 
         player.take_insurance(amount)
         self._player_index += 1
-        if self._player_index >= len(self._players):
-            self._dealer_peek()
+        self._advance_insurance_actor()
 
     def _decide_insurance(self, player: Player, take: bool) -> None:
         self.take_insurance(player, self._insurance_stake(player) if take else 0)
@@ -300,8 +302,9 @@ class Game:
         self._distribute_cards()
         self._player_index = 0
         up_card = self._dealer.active_hand.visible_hand[0]
-        if self._insurance and up_card.rank == "Ace":
+        if up_card.rank == "Ace" and (self._insurance or self._even_money):
             self._phase = Phase.INSURANCE
+            self._advance_insurance_actor()
         elif up_card.rank in PEEK_RANKS:
             self._dealer_peek()
         else:
@@ -365,6 +368,10 @@ class Game:
 
         if action in (Action.INSURANCE, Action.DECLINE_INSURANCE):
             self._decide_insurance(player, take=action == Action.INSURANCE)
+            return
+
+        if action == Action.EVEN_MONEY:
+            self._take_even_money(player)
             return
 
         if action == Action.HIT:
@@ -452,9 +459,11 @@ class Game:
         self._phase = Phase.ROUND_END
 
     @staticmethod
-    def _settle(player_hand, dealer_hand, bet: int) -> int:
+    def _settle(player_hand: Hand, dealer_hand: Hand, bet: int) -> int:
         if player_hand.bust:
             return 0
+        if player_hand.even_money:
+            return 2 * bet
         if dealer_hand.blackjack and not player_hand.blackjack:
             return 0
         if player_hand.blackjack and not dealer_hand.blackjack:
