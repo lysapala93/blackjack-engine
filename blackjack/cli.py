@@ -32,7 +32,6 @@ ACTION_LABELS = {
     Action.DECLINE_INSURANCE: "(n)o insurance",
 }
 
-MIN_BET = 1
 DEFAULT_BUDGET = 1000
 
 
@@ -71,7 +70,8 @@ def _run_betting(game: Game) -> None:
     for player in game.players:
         while True:
             amount = _prompt_int(
-                f"{player.name} (budget {player.budget}), bet amount: "
+                f"{player.name} (budget {player.budget}), "
+                f"bet amount [{game.min_bet}-{game.max_bet}]: "
             )
             try:
                 game.place_bet(player, amount)
@@ -151,7 +151,7 @@ def main() -> None:
     _set_cutcard(game)
 
     while True:
-        if any(player.budget < MIN_BET for player in game.players):
+        if any(player.budget < game.min_bet for player in game.players):
             # TODO: support seating broke players out instead of ending the
             # whole session; the engine currently requires every player to
             # bet before a round can start.
