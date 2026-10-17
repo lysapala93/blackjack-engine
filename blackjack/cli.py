@@ -22,6 +22,7 @@ ACTION_KEYS = {
     "sp": Action.SPLIT,
     "i": Action.INSURANCE,
     "n": Action.DECLINE_INSURANCE,
+    "e": Action.EVEN_MONEY,
 }
 ACTION_LABELS = {
     Action.HIT: "(h)it",
@@ -30,6 +31,7 @@ ACTION_LABELS = {
     Action.SPLIT: "(sp)lit",
     Action.INSURANCE: "(i)nsure",
     Action.DECLINE_INSURANCE: "(n)o insurance",
+    Action.EVEN_MONEY: "(e)ven money",
 }
 
 DEFAULT_BUDGET = 1000
