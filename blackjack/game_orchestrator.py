@@ -335,10 +335,15 @@ class Game:
             return []
 
         if self._phase == Phase.INSURANCE:
+            actions = [Action.DECLINE_INSURANCE]
             stake = self._insurance_stake(player)
-            if stake > 0 and player.budget >= stake:
-                return [Action.INSURANCE, Action.DECLINE_INSURANCE]
-            return [Action.DECLINE_INSURANCE]
+            if self._insurance and stake > 0 and player.budget >= stake:
+                logger.debug("Player is able to take an insurance")
+                actions.append(Action.INSURANCE)
+            if self._can_take_even_money(player):
+                logger.debug("Player is able to take even money")
+                actions.append(Action.EVEN_MONEY)
+            return actions
 
         actions = [Action.HIT, Action.STAND]
         can_afford_double = player.budget >= player.active_hand.bet
