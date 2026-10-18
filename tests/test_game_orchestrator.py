@@ -409,3 +409,62 @@ class TestEvenMoney:
         game.place_bet(game.players[0], 100)
 
         assert Action.EVEN_MONEY not in game.legal_actions()
+
+
+class TestBrokePlayers:
+
+    @staticmethod
+    def _game(**kwargs) -> Game:
+        game = Game(players=["Danny Ocean", "Rusty Ryan"], start_budget=1000, min_bet=20, **kwargs)
+        game.start()
+        # dealer shows a 6: no insurance/peek
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank=rank) for rank in ["5", "6", "7", "8", "9", "10"]
+        ]
+        return game
+
+    def test_broke_player_sits_out_and_round_starts_without_him(self):
+        game = self._game()
+        broke, rich = game.players
+        broke._budget = 10
+
+        with pytest.raises(ValueError):
+            game.place_bet(broke, 10)
+        game.place_bet(rich, 100)
+
+        assert game.phase == Phase.PLAYER_TURN
+        assert game.round_players == [rich]
+        assert game.current_actor is rich
+        assert len(broke.active_hand) == 0
+
+    def test_broke_player_has_no_round_result(self):
+        game = self._game()
+        broke, rich = game.players
+        broke._budget = 10
+
+        game.place_bet(rich, 100)
+        game.act(Action.STAND)
+
+        assert game.phase == Phase.BETTING
+        assert [result.player for result in game.last_round_results] == [rich]
+        assert broke.budget == 10
+        assert game.round_players == []
+
+    def test_player_whose_bet_leaves_him_broke_still_plays(self):
+        game = self._game()
+        first, second = game.players
+        game.place_bet(first, 1000)
+
+        assert game.phase == Phase.BETTING
+        game.place_bet(second, 100)
+        assert game.round_players == [first, second]
+
+    def test_game_over_only_when_nobody_can_afford_minimum(self):
+        game = self._game()
+        first, second = game.players
+
+        first._budget = 10
+        assert not game.game_over
+
+        second._budget = 19
+        assert game.game_over
