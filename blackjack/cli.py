@@ -70,6 +70,12 @@ def _set_cutcard(game: Game) -> None:
 def _run_betting(game: Game) -> None:
     print("\n-- Betting --")
     for player in game.players:
+        if not game.can_play(player):
+            print(
+                f"{player.name} (budget {player.budget}) can't afford the "
+                f"minimum bet of {game.min_bet} and sits out."
+            )
+            continue
         while True:
             amount = _prompt_int(
                 f"{player.name} (budget {player.budget}), "
@@ -153,11 +159,8 @@ def main() -> None:
     _set_cutcard(game)
 
     while True:
-        if any(player.budget < game.min_bet for player in game.players):
-            # TODO: support seating broke players out instead of ending the
-            # whole session; the engine currently requires every player to
-            # bet before a round can start.
-            print("\nA player is out of budget. Ending session.")
+        if game.game_over:
+            print("\nNo player can afford the minimum bet anymore. Ending session.")
             break
 
         _run_betting(game)
