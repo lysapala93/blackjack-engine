@@ -356,7 +356,11 @@ class Game:
         self._distribute_cards()
         self._player_index = 0
         up_card = self._dealer.active_hand.visible_hand[0]
-        if up_card.rank == "Ace" and (self._insurance or self._even_money):
+        offers_pre_peek = up_card.rank in PEEK_RANKS and (
+            self._early_surrender
+            or (up_card.rank == "Ace" and (self._insurance or self._even_money))
+        )
+        if offers_pre_peek:
             self._phase = Phase.INSURANCE
             self._advance_insurance_actor()
         elif up_card.rank in PEEK_RANKS:
