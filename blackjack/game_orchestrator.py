@@ -310,7 +310,11 @@ class Game:
         return self._early_surrender and not hand.blackjack and len(hand) == 2
 
     def _has_insurance_decision(self, player: Player) -> bool:
-        return self._insurance or self._can_take_even_money(player)
+        if self._can_early_surrender(player):
+            return True
+        return self._dealer_shows_ace() and (
+            self._insurance or self._can_take_even_money(player)
+        )
 
     def _advance_insurance_actor(self) -> None:
         """Skips players without an insurance/even money decision and lets the
