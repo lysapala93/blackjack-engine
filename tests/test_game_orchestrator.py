@@ -504,3 +504,33 @@ class TestSurrender:
         for player in game.players:
             game.place_bet(player, 100)
         assert Action.EARLY_SURRENDER not in game.legal_actions()
+
+    def test_early_surrender_mechanism(self):
+        game = self._game(early_surrender=True)
+        danny, rusty = game.players
+        for player in game.players:
+            game.place_bet(player, 100)
+
+        game.act(Action.EARLY_SURRENDER)  # Danny
+        game.act(
+            Action.DECLINE_INSURANCE
+        )  # Rusty -> dealer peeks, has blackjack, round ends
+
+        assert danny.budget == 1000 - 50
+        assert rusty.budget == 1000 - 100
+        result = game.last_round_results[0]
+        assert result.net == -50
+
+    def test_early_surrender_against_ten_up_card(self):
+        game = Game(players=["Danny Ocean"], start_budget=1000, early_surrender=True)
+        game.start()
+        # player=5+8, dealer up=King, hole=Ace (blackjack)
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank=r) for r in ["5", "King", "8", "Ace"]
+        ]
+        game.place_bet(game.players[0], 100)
+
+        assert Action.INSURANCE not in game.legal_actions()
+        game.act(Action.EARLY_SURRENDER)
+
+        assert game.players[0].budget == 950
