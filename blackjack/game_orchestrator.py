@@ -302,6 +302,13 @@ class Game:
     def _can_take_even_money(self, player: Player) -> bool:
         return self._even_money and player.active_hand.blackjack
 
+    def _dealer_shows_ace(self) -> bool:
+        return self._dealer.active_hand.visible_hand[0].rank == "Ace"
+
+    def _can_early_surrender(self, player: Player) -> bool:
+        hand = player.active_hand
+        return self._early_surrender and not hand.blackjack and len(hand) == 2
+
     def _has_insurance_decision(self, player: Player) -> bool:
         return self._insurance or self._can_take_even_money(player)
 
