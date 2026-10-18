@@ -48,6 +48,8 @@ class Action(Enum):
     INSURANCE = auto()
     DECLINE_INSURANCE = auto()
     EVEN_MONEY = auto()
+    EARLY_SURRENDER = auto()
+    LATE_SURRENDER = auto()
 
 
 @dataclass
@@ -387,6 +389,9 @@ class Game:
             if self._can_take_even_money(player):
                 logger.debug("Player is able to take even money")
                 actions.append(Action.EVEN_MONEY)
+            if self.early_surrender:
+                logger.debug("Player can early surrender")
+                actions.append(Action.EARLY_SURRENDER)
             return actions
 
         actions = [Action.HIT, Action.STAND]
@@ -398,6 +403,9 @@ class Game:
         if self._can_split(player, player.active_hand):
             logger.debug("Player is able to split")
             actions.append(Action.SPLIT)
+        if self.early_surrender and (len(player.active_hand) == 2):
+            logger.debug("Player can early surrender")
+            actions.append(Action.EARLY_SURRENDER)
         return actions
 
     def act(self, action: Action) -> None:
