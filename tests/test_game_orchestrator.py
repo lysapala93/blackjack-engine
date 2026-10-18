@@ -1,3 +1,4 @@
+from blackjack.game_orchestrator import Game
 from blackjack import Deck
 from blackjack import *
 from blackjack import Phase, Action
@@ -415,7 +416,12 @@ class TestBrokePlayers:
 
     @staticmethod
     def _game(**kwargs) -> Game:
-        game = Game(players=["Danny Ocean", "Rusty Ryan"], start_budget=1000, min_bet=20, **kwargs)
+        game = Game(
+            players=["Danny Ocean", "Rusty Ryan"],
+            start_budget=1000,
+            min_bet=20,
+            **kwargs,
+        )
         game.start()
         # dealer shows a 6: no insurance/peek
         game.deck._deck[:0] = [
@@ -468,3 +474,33 @@ class TestBrokePlayers:
 
         second._budget = 19
         assert game.game_over
+
+
+class TestSurrender:
+
+    @staticmethod
+    def _game(**kwargs) -> Game:
+        game = Game(
+            players=["Danny Ocean", "Rusty Ryan"],
+            start_budget=1000,
+            min_bet=20,
+            **kwargs,
+        )
+        game.start()
+        # P1=5, P2=6, dealer up=Ace, P1=8, P2=9, dealer hole=10
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank=r) for r in ["5", "6", "Ace", "8", "9", "10"]
+        ]
+        return game
+
+    def test_offer_early_surrender(self):
+        game = self._game(early_surrender=True)
+        for player in game.players:
+            game.place_bet(player, 100)
+        assert Action.EARLY_SURRENDER in game.legal_actions()
+
+    def test_no_surrender_when_disabled(self):
+        game = self._game()
+        for player in game.players:
+            game.place_bet(player, 100)
+        assert Action.EARLY_SURRENDER not in game.legal_actions()
