@@ -410,9 +410,6 @@ class Game:
         if self._can_split(player, player.active_hand):
             logger.debug("Player is able to split")
             actions.append(Action.SPLIT)
-        if self.early_surrender and (len(player.active_hand) == 2):
-            logger.debug("Player can early surrender")
-            actions.append(Action.EARLY_SURRENDER)
         return actions
 
     def act(self, action: Action) -> None:
