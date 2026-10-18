@@ -19,6 +19,7 @@ without any game logic being duplicated between the two.
 - **Splitting**: Fully wired into the orchestrator — a player can hold several concurrent hands, each with its own bet. Configurable via `max_splittings` and `re_splitting`; split Aces automatically stand after one card, a 21 made from a split counts as a regular 21 (not a 3:2 blackjack), and each hand is settled separately.
 - **Game Orchestrator**: A `Phase`/`Action` state machine that drives betting → dealing → player turns → dealer turns → payout → reshuffle automatically, only pausing when a player decision is required.
 - **Insurance & Dealer Peek**: When the dealer shows an Ace (and `insurance=True`), each player may take insurance of up to half their bet (`Action.INSURANCE` for the maximum, `Action.DECLINE_INSURANCE`, or `game.take_insurance(player, amount)` for a custom amount). The dealer then peeks at the hole card when showing an Ace or a ten-value card: on blackjack the round ends immediately (insurance pays 2:1, a player blackjack pushes, everything else loses); otherwise insurance is forfeited and play continues.
+- **Broke Players Sit Out**: a player who can't afford `min_bet` is skipped during betting (`game.can_play(player)`) and isn't dealt in; `game.round_players` lists who plays the current round. The session only ends when `game.game_over` is true (nobody can afford the minimum).
 - **Discard Tray**: Tracks discarded cards and feeds them back into the shoe on reshuffle.
 - **CLI**: Playable terminal interface (`python blackjack.py`) built entirely on the public engine API.
 - **Logging**: Structured logging for debugging and monitoring shoe/game state.
@@ -187,8 +188,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 ## Roadmap / Known limitations
 
 - **Surrender**: not implemented.
-- **Broke players in a multi-player game**: currently the whole session ends
-  once any player can't afford the next bet, instead of sitting them out.
 - **Reinforcement learning**: the engine's `current_actor` / `legal_actions()`
   / `act()` API is designed to be RL-friendly; a `Gymnasium`-style env
   wrapper and baseline agents (random / basic strategy) are the natural next
