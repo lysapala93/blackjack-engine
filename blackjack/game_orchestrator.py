@@ -90,6 +90,8 @@ class Game:
         max_splittings: int = 3,
         re_splitting: bool = True,
         insurance: bool = True,
+        early_surrender: bool = False,
+        late_surrender: bool = False,
     ):
         if min_bet <= 0:
             raise ValueError(f"min_bet must be greater than zero (is {min_bet})")
@@ -116,6 +118,8 @@ class Game:
         self._max_splittings: int = max_splittings
         self._re_splitting: bool = re_splitting
         self._insurance: bool = insurance
+        self._early_surrender: bool = early_surrender
+        self._late_surrender: bool = late_surrender
         self._last_round_results: list[RoundResult] = []
 
     # ---------------------------------------------
@@ -160,6 +164,14 @@ class Game:
     @property
     def max_splittings(self) -> int:
         return self._max_splittings
+
+    @property
+    def early_surrender(self) -> bool:
+        return self._early_surrender
+
+    @property
+    def late_surrender(self) -> bool:
+        return self._late_surrender
 
     @property
     def re_splitting(self) -> bool:
