@@ -426,6 +426,12 @@ class Game:
             self._decide_insurance(player, take=action == Action.INSURANCE)
             return
 
+        if action == Action.EARLY_SURRENDER:
+            player.take_early_surrender()
+            self._player_index += 1
+            self._advance_insurance_actor()
+            return
+
         if action == Action.EVEN_MONEY:
             self._take_even_money(player)
             return
