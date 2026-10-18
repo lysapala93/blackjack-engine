@@ -112,6 +112,7 @@ class Game:
         self._game_started: bool = False
         self._phase: Phase = Phase.BETTING
         self._player_index: int = 0
+        self._round_players: list[Player] = []
         self._max_splittings: int = max_splittings
         self._re_splitting: bool = re_splitting
         self._insurance: bool = insurance
@@ -168,6 +169,10 @@ class Game:
     def insurance(self) -> bool:
         return self._insurance
 
+    @property
+    def round_players(self) -> list[Player]:
+        """Players taking part in the current round (empty between rounds)."""
+        return self._round_players
     @property
     def current_actor(self) -> Player | None:
         """The player whose decision is currently pending, or None."""
