@@ -191,9 +191,9 @@ class Game:
         """The player whose decision is currently pending, or None."""
         if self._phase not in (Phase.PLAYER_TURN, Phase.INSURANCE):
             return None
-        if self._player_index >= len(self._players):
+        if self._player_index >= len(self._round_players):
             return None
-        return self._players[self._player_index]
+        return self._round_players[self._player_index]
 
     @property
     def last_round_results(self) -> list[RoundResult]:
@@ -233,6 +233,10 @@ class Game:
             raise ValueError(f"{player} is not part of this game")
         if player.active_hand.bet != 0:
             raise ArithmeticError(f"{player} has already placed a bet this round")
+        if not self.can_play(player):
+            raise ValueError(
+                f"{player.name} cannot afford the minimum bet of {self.min_bet} and sits out"
+            )
         if (amount < self.min_bet) or (amount > self.max_bet):
             raise ValueError(
                 f"Bet must be between {self.min_bet} and {self.max_bet} (is {amount})"
@@ -240,7 +244,11 @@ class Game:
 
         player.place_bet(amount)
 
-        if all(participant.active_hand.bet != 0 for participant in self.players):
+        # Broke players sit out; the round starts once everyone else has bet.
+        if all(
+            participant.active_hand.bet != 0 or not self.can_play(participant)
+            for participant in self._players
+        ):
             self._start_round()
 
     # ---------------------------------------------
@@ -286,12 +294,12 @@ class Game:
     def _advance_insurance_actor(self) -> None:
         """Skips players without an insurance/even money decision and lets the
         dealer peek once every player has decided."""
-        while self._player_index < len(self._players) and not (
-            self._has_insurance_decision(self._players[self._player_index])
+        while self._player_index < len(self._round_players) and not (
+            self._has_insurance_decision(self._round_players[self._player_index])
         ):
             self._player_index += 1
 
-        if self._player_index >= len(self._players):
+        if self._player_index >= len(self._round_players):
             self._dealer_peek()
 
     def _dealer_peek(self) -> None:
@@ -317,6 +325,9 @@ class Game:
         logger.info("Deck is shuffled and split cards are set")
 
     def _start_round(self) -> None:
+        self._round_players = [
+            player for player in self._players if player.active_hand.bet != 0
+        ]
         self._distribute_cards()
         self._player_index = 0
         up_card = self._dealer.active_hand.visible_hand[0]
@@ -333,12 +344,12 @@ class Game:
         # Casino order: one card round-robin to each player then the dealer,
         # repeated twice. The dealer's second card stays hidden (see Hand).
         for _ in range(2):
-            for player in self._players:
+            for player in self._round_players:
                 player.hit(self._deck)
             self._dealer.hit(self._deck)
 
         # A natural blackjack is final: the player takes no further action.
-        for player in self._players:
+        for player in self._round_players:
             if player.active_hand.blackjack:
                 player.stand()
 
@@ -424,12 +435,12 @@ class Game:
         self._advance_to_next_actor()
 
     def _advance_to_next_actor(self) -> None:
-        while self._player_index < len(self._players) and all(
-            hand.stand for hand in self._players[self._player_index].hands
+        while self._player_index < len(self._round_players) and all(
+            hand.stand for hand in self._round_players[self._player_index].hands
         ):
             self._player_index += 1
 
-        if self._player_index >= len(self._players):
+        if self._player_index >= len(self._round_players):
             self._finish_round()
 
     def _finish_round(self) -> None:
@@ -455,7 +466,7 @@ class Game:
     def _payout_phase(self) -> None:
         dealer_hand = self._dealer.active_hand
         self._last_round_results = []
-        for player in self._players:
+        for player in self._round_players:
             for hand_index, hand in enumerate(player.hands):
                 payout = self._settle(hand, dealer_hand, hand.bet)
                 insurance = hand.insurance or 0
@@ -505,6 +516,7 @@ class Game:
         self._dealer.reset_for_new_round()
 
         self._player_index = 0
+        self._round_players = []
 
         if self._deck.end_game:
             self._deck.collect_discard_pile(self._discard_tray.reset())
