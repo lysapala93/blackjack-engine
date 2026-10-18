@@ -518,6 +518,8 @@ class Game:
     def _settle(player_hand: Hand, dealer_hand: Hand, bet: int) -> int:
         if player_hand.bust:
             return 0
+        if player_hand.early_surrender:
+            return bet // 2
         if player_hand.even_money:
             return 2 * bet
         if dealer_hand.blackjack and not player_hand.blackjack:
