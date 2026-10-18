@@ -394,13 +394,14 @@ class Game:
         if self._phase == Phase.INSURANCE:
             actions = [Action.DECLINE_INSURANCE]
             stake = self._insurance_stake(player)
-            if self._insurance and stake > 0 and player.budget >= stake:
+            ace_up = self._dealer_shows_ace()
+            if ace_up and self._insurance and stake > 0 and player.budget >= stake:
                 logger.debug("Player is able to take an insurance")
                 actions.append(Action.INSURANCE)
-            if self._can_take_even_money(player):
+            if ace_up and self._can_take_even_money(player):
                 logger.debug("Player is able to take even money")
                 actions.append(Action.EVEN_MONEY)
-            if self.early_surrender:
+            if self._can_early_surrender(player):
                 logger.debug("Player can early surrender")
                 actions.append(Action.EARLY_SURRENDER)
             return actions
