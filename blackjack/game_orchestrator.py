@@ -173,6 +173,19 @@ class Game:
     def round_players(self) -> list[Player]:
         """Players taking part in the current round (empty between rounds)."""
         return self._round_players
+
+    def can_play(self, player: Player) -> bool:
+        """True if the player can afford the table minimum. Players who
+        can't sit out and are not waited for during betting."""
+        return player.budget >= self._min_bet
+
+    @property
+    def game_over(self) -> bool:
+        """True once no player can afford the table minimum anymore."""
+        return self._phase == Phase.BETTING and not any(
+            self.can_play(player) for player in self._players
+        )
+
     @property
     def current_actor(self) -> Player | None:
         """The player whose decision is currently pending, or None."""
