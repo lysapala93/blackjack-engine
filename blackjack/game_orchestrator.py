@@ -309,6 +309,15 @@ class Game:
         hand = player.active_hand
         return self._early_surrender and not hand.blackjack and len(hand) == 2
 
+    def _can_late_surrender(self, player: Player) -> bool:
+        hand = player.active_hand
+        return (
+            self._late_surrender
+            and not hand.blackjack
+            and len(player.hands) == 1
+            and len(hand) == 2
+        )
+
     def _has_insurance_decision(self, player: Player) -> bool:
         if self._can_early_surrender(player):
             return True
