@@ -23,12 +23,14 @@ class TestDeckBasic:
         assert len(shoe) == (6 * 52) - 1
 
     def test_shuffle(self):
-        shoe = Deck(deck_size=6)
-        shoe.shuffle()
-        card = shoe.draw()
+        unshuffled = Deck(deck_size=6)
+        shuffled = Deck(deck_size=6)
+        shuffled.shuffle()
 
-        assert card.suit != "Hearts"
-        assert card.rank != "2"
+        assert len(shuffled) == len(unshuffled)
+        assert [(c.suit, c.rank) for c in shuffled._deck] != [
+            (c.suit, c.rank) for c in unshuffled._deck
+        ]
 
     def test_cut_card(self):
         shoe = Deck(deck_size=6)
