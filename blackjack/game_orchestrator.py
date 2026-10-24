@@ -95,6 +95,8 @@ class Game:
         early_surrender: bool = False,
         late_surrender: bool = False,
     ):
+        if early_surrender and late_surrender:
+            raise ValueError("early_surrender and late_surrender are mutually exclusive")
         if min_bet <= 0:
             raise ValueError(f"min_bet must be greater than zero (is {min_bet})")
         if min_bet > max_bet:
