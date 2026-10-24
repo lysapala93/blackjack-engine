@@ -534,3 +534,132 @@ class TestSurrender:
         game.act(Action.EARLY_SURRENDER)
 
         assert game.players[0].budget == 950
+
+    def test_late_surrender(self):
+        game = Game(players=["Danny Ocean"], start_budget=1000, late_surrender=True)
+        game.start()
+        # player=5+8, dealer up=King, hole=6 (no blackjack)
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank=r) for r in ["5", "King", "8", "6"]
+        ]
+        game.place_bet(game.players[0], 100)
+
+        assert Action.INSURANCE not in game.legal_actions()
+        assert Action.LATE_SURRENDER in game.legal_actions()
+
+        game.act(Action.LATE_SURRENDER)
+        assert game.players[0].budget == 950
+
+    def test_declined_late_surrender(self):
+        game = Game(players=["Danny Ocean"], start_budget=1000, late_surrender=True)
+        game.start()
+        # player=5+8, dealer up=Ace, hole=King (blackjack)
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank=r) for r in ["5", "Ace", "8", "King"]
+        ]
+        game.place_bet(game.players[0], 100)
+
+        assert Action.INSURANCE in game.legal_actions()
+        assert Action.LATE_SURRENDER not in game.legal_actions()
+        game.act(Action.DECLINE_INSURANCE)
+        assert game.phase == Phase.BETTING
+
+    @staticmethod
+    def _ten_up_game(ranks, players=("Danny Ocean",), **kwargs) -> Game:
+        game = Game(
+            players=list(players), start_budget=1000, late_surrender=True, **kwargs
+        )
+        game.start()
+        game.deck._deck[:0] = [Card(suit="Hearts", rank=r) for r in ranks]
+        for player in game.players:
+            game.place_bet(player, 100)
+        return game
+
+    def test_no_late_surrender_when_disabled(self):
+        game = Game(players=["Danny Ocean"], start_budget=1000)
+        game.start()
+        game.deck._deck[:0] = [
+            Card(suit="Hearts", rank=r) for r in ["5", "King", "8", "6"]
+        ]
+        game.place_bet(game.players[0], 100)
+
+        assert Action.LATE_SURRENDER not in game.legal_actions()
+
+    def test_no_late_surrender_after_hit(self):
+        # player=5+8, dealer up=King, hole=6, next card=2
+        game = self._ten_up_game(["5", "King", "8", "6", "2"])
+        assert Action.LATE_SURRENDER in game.legal_actions()
+
+        game.act(Action.HIT)
+
+        assert Action.LATE_SURRENDER not in game.legal_actions()
+
+    def test_no_late_surrender_with_blackjack(self):
+        # player=Ace+King, dealer up=King, hole=6
+        game = self._ten_up_game(["Ace", "King", "King", "6"])
+
+        assert game.current_actor is None or (
+            Action.LATE_SURRENDER not in game.legal_actions()
+        )
+
+    def test_no_late_surrender_after_split(self):
+        # player=8+8, dealer up=King, hole=6, split draws 2 and 3
+        game = self._ten_up_game(["8", "King", "8", "6", "2", "3"])
+        assert Action.SPLIT in game.legal_actions()
+
+        game.act(Action.SPLIT)
+
+        assert Action.LATE_SURRENDER not in game.legal_actions()
+
+    def test_late_surrender_is_offered_after_dealer_peek(self):
+        # dealer up=King, hole=Ace: dealer blackjack ends the round before
+        # the player can surrender, so the full bet is lost
+        game = self._ten_up_game(["5", "King", "8", "Ace"])
+
+        assert game.phase == Phase.BETTING
+        assert game.players[0].budget == 900
+
+    def test_late_surrender_returns_half_the_bet(self):
+        game = self._ten_up_game(["5", "King", "8", "6"])
+
+        game.act(Action.LATE_SURRENDER)
+
+        result = game.last_round_results[0]
+        assert result.net == -50
+        assert game.players[0].budget == 950
+        assert game.phase == Phase.BETTING
+
+    def test_late_surrender_passes_turn_to_next_player(self):
+        # P1=5, P2=6, dealer up=King, P1=8, P2=9, hole=6, next card=2
+        game = self._ten_up_game(
+            ["5", "6", "King", "8", "9", "6", "2"],
+            players=("Danny Ocean", "Rusty Ryan"),
+        )
+        danny, rusty = game.players
+        assert game.current_actor is danny
+
+        game.act(Action.LATE_SURRENDER)
+
+        assert game.phase == Phase.PLAYER_TURN
+        assert game.current_actor is rusty
+        assert Action.LATE_SURRENDER in game.legal_actions()
+        assert Action.HIT in game.legal_actions()
+
+    def test_late_surrender_rejected_when_not_legal(self):
+        game = self._ten_up_game(["5", "King", "8", "6", "2"])
+        game.act(Action.HIT)
+
+        with pytest.raises(ValueError):
+            game.act(Action.LATE_SURRENDER)
+
+    def test_all_players_surrender(self):
+        game = self._ten_up_game(
+            ["5", "6", "King", "8", "9", "6"],
+            players=("Danny Ocean", "Rusty Ryan"),
+        )
+
+        game.act(Action.LATE_SURRENDER)
+        game.act(Action.LATE_SURRENDER)
+
+        assert game.phase == Phase.BETTING
+        assert [p.budget for p in game.players] == [950, 950]
