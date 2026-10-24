@@ -174,6 +174,10 @@ class Player(Participant):
         self.active_hand.early_surrender = True
         self.stand()
 
+    def take_late_surrender(self) -> None:
+        self.active_hand.late_surrender = True
+        self.stand()
+
     def take_insurance(self, amount: int) -> None:
         """
         Allows player to take an insurance, when the dealer has an ace as
