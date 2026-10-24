@@ -23,6 +23,8 @@ ACTION_KEYS = {
     "i": Action.INSURANCE,
     "n": Action.DECLINE_INSURANCE,
     "e": Action.EVEN_MONEY,
+    "es": Action.EARLY_SURRENDER,
+    "ls": Action.LATE_SURRENDER,
 }
 ACTION_LABELS = {
     Action.HIT: "(h)it",
@@ -32,6 +34,8 @@ ACTION_LABELS = {
     Action.INSURANCE: "(i)nsure",
     Action.DECLINE_INSURANCE: "(n)o insurance",
     Action.EVEN_MONEY: "(e)ven money",
+    Action.EARLY_SURRENDER: "(es) early surrender",
+    Action.LATE_SURRENDER: "(ls) late surrender",
 }
 
 DEFAULT_BUDGET = 1000
@@ -46,6 +50,18 @@ def _prompt_int(prompt: str, default: int | None = None) -> int:
             return int(raw)
         except ValueError:
             print("Please enter a whole number.")
+
+
+def _prompt_surrender() -> dict[str, bool]:
+    while True:
+        raw = input("Surrender rule: (n)one, (e)arly, (l)ate [n]: ").strip().lower()
+        if raw in ("", "n", "none"):
+            return {}
+        if raw in ("e", "early"):
+            return {"early_surrender": True}
+        if raw in ("l", "late"):
+            return {"late_surrender": True}
+        print("Please enter n, e or l.")
 
 
 def _prompt_players() -> list[str]:
@@ -154,7 +170,9 @@ def main() -> None:
         f"Starting budget per player [{DEFAULT_BUDGET}]: ", default=DEFAULT_BUDGET
     )
 
-    game = Game(players=names, start_budget=budget)
+    rules = _prompt_surrender()
+
+    game = Game(players=names, start_budget=budget, **rules)
     game.start()
     _set_cutcard(game)
 
