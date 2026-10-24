@@ -663,3 +663,12 @@ class TestSurrender:
 
         assert game.phase == Phase.BETTING
         assert [p.budget for p in game.players] == [950, 950]
+
+    def test_early_and_late_surrender_are_mutually_exclusive(self):
+        with pytest.raises(ValueError):
+            Game(
+                players=["Danny Ocean"],
+                start_budget=1000,
+                early_surrender=True,
+                late_surrender=True,
+            )
