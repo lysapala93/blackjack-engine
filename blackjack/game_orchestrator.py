@@ -428,6 +428,10 @@ class Game:
         if self._can_split(player, player.active_hand):
             logger.debug("Player is able to split")
             actions.append(Action.SPLIT)
+        if self.late_surrender and self._can_late_surrender(player):
+            logger.debug("Player is able to surrender late")
+            actions.append(Action.LATE_SURRENDER)
+
         return actions
 
     def act(self, action: Action) -> None:
@@ -458,6 +462,9 @@ class Game:
 
         elif action == Action.STAND:
             player.stand()
+
+        elif action == Action.LATE_SURRENDER:
+            player.take_late_surrender()
 
         elif action == Action.DOUBLE:
             player.place_bet(player.active_hand.bet)
