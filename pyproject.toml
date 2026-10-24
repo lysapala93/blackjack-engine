@@ -2,10 +2,15 @@
 name = "blackjack-engine"
 version = "0.1.0"
 authors = [ { name = "lysapala93" } ]
-description = "Add your description here"
+description = "Blackjack engine built as a phase state machine with configurable rules, a CLI and an RL-friendly API"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"
+keywords = ["blackjack", "game-engine", "simulation", "state-machine", "reinforcement-learning"]
+
+[project.urls]
+Homepage = "https://github.com/lysapala93/blackjack-engine"
+Issues = "https://github.com/lysapala93/blackjack-engine/issues"
 dependencies = [
     "numpy>=2.3.5",
     "pytest>=9.0.1",
