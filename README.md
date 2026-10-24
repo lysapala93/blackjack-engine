@@ -20,6 +20,8 @@ without any game logic being duplicated between the two.
 - **Game Orchestrator**: A `Phase`/`Action` state machine that drives betting → dealing → player turns → dealer turns → payout → reshuffle automatically, only pausing when a player decision is required.
 - **Insurance & Dealer Peek**: When the dealer shows an Ace (and `insurance=True`), each player may take insurance of up to half their bet (`Action.INSURANCE` for the maximum, `Action.DECLINE_INSURANCE`, or `game.take_insurance(player, amount)` for a custom amount). The dealer then peeks at the hole card when showing an Ace or a ten-value card: on blackjack the round ends immediately (insurance pays 2:1, a player blackjack pushes, everything else loses); otherwise insurance is forfeited and play continues.
 - **Broke Players Sit Out**: a player who can't afford `min_bet` is skipped during betting (`game.can_play(player)`) and isn't dealt in; `game.round_players` lists who plays the current round. The session only ends when `game.game_over` is true (nobody can afford the minimum).
+- **Even Money**: when the dealer shows an Ace and the player holds a blackjack, `Action.EVEN_MONEY` pays 1:1 immediately (`even_money=True` by default).
+- **Surrender**: optional `early_surrender` (offered before the dealer peeks, against an Ace or ten-value up-card) and `late_surrender` (offered after the peek, only as the first decision on a single two-card, non-blackjack hand — not after a hit or split). A surrendered hand gets half its bet back. The two options are mutually exclusive.
 - **Discard Tray**: Tracks discarded cards and feeds them back into the shoe on reshuffle.
 - **CLI**: Playable terminal interface (`python blackjack.py`) built entirely on the public engine API.
 - **Logging**: Structured logging for debugging and monitoring shoe/game state.
@@ -38,7 +40,7 @@ blackjack-engine/
 │   ├── cli.py                 # Terminal interface, built on the Game API
 │   ├── logger.py              # Logging configuration
 │   └── __init__.py            # Package exports
-├── tests/                     # Unit tests (pytest)
+├── tests/                     # Unit tests (pytest), incl. engine and CLI
 ├── blackjack.py                # Entry point: `python blackjack.py` to play
 ├── pyproject.toml
 └── README.md
@@ -73,13 +75,15 @@ python blackjack.py
 uv run blackjack
 ```
 
-You'll be prompted for player name(s) and a starting budget, then for the cut
-card position of the new shoe. For each round you then enter a bet, followed by
-hit/stand/double/split decisions (only the actions that are currently legal are
-offered). If the dealer shows an Ace you are first asked whether to take
-insurance (`i`) or not (`n`). If you split, each of your hands is played and shown separately. After
-each round, results and updated budgets are printed and you're asked whether to
-play another round.
+You'll be prompted for player name(s), a starting budget and the surrender rule
+(none, early or late), then for the cut card position of the new shoe. For each
+round you then enter a bet, followed by hit/stand/double/split decisions (only
+the actions that are currently legal are offered). If the dealer shows an Ace
+you are first asked whether to take insurance (`i`) or not (`n`), or `e` for
+even money with a blackjack. Surrender is entered as `es` (early) or `ls`
+(late) when offered. If you split, each of your hands is played and shown
+separately. After each round, results and updated budgets are printed and
+you're asked whether to play another round.
 
 ## Using the engine programmatically
 
@@ -99,6 +103,9 @@ game = Game(
     max_splittings=3,     # max number of hands a player may end up with
     re_splitting=True,    # allow splitting an already-split hand again
     insurance=True,       # offer insurance when the dealer shows an Ace
+    even_money=True,      # offer even money to a blackjack against an Ace
+    early_surrender=False,  # surrender before the dealer peeks (exclusive with late)
+    late_surrender=False,   # surrender after the dealer peeked without blackjack
 )
 game.start()
 
@@ -109,7 +116,8 @@ while game.current_actor is not None:
     actor = game.current_actor
     hand = actor.active_hand            # the hand currently being played
     legal = game.legal_actions()        # e.g. [Action.HIT, Action.STAND, Action.DOUBLE, Action.SPLIT]
-                                        # or [Action.INSURANCE, Action.DECLINE_INSURANCE] in Phase.INSURANCE
+                                        # plus Action.LATE_SURRENDER when enabled and allowed
+                                        # or [Action.INSURANCE, Action.DECLINE_INSURANCE, ...] in Phase.INSURANCE
     game.act(Action.STAND if Action.STAND in legal else legal[0])
 
 # dealer turn + payout already ran automatically; one result per hand
@@ -141,9 +149,12 @@ uv run pytest tests/test_game_orchestrator.py   # a single file
 
 ### Phase state machine (`game_orchestrator.py`)
 `Game` moves through `Phase.BETTING → [Phase.INSURANCE →] [Phase.DEALER_PEEK →]
-Phase.PLAYER_TURN → Phase.ROUND_END → Phase.BETTING`. The insurance phase only
-occurs when the dealer shows an Ace; the peek happens for an Ace or ten-value
-up-card and, if the dealer has blackjack, skips straight to payout. Only three calls are needed to drive it end to end:
+Phase.PLAYER_TURN → Phase.ROUND_END → Phase.BETTING`. The insurance phase
+occurs before the peek when the dealer shows an Ace (insurance / even money) or
+when `early_surrender` is on and the up-card is an Ace or ten-value card; the
+peek happens for an Ace or ten-value up-card and, if the dealer has blackjack,
+skips straight to payout. With `late_surrender`, the player decision comes
+after the peek, so a dealer blackjack always wins the full bet. Only three calls are needed to drive it end to end:
 `place_bet()`, `act()`, and reading `current_actor`/`legal_actions()` in
 between. Dealing, the dealer's turn, payout, and shoe reshuffling all happen
 automatically inside these calls — there is no hidden `while True` loop and
@@ -187,7 +198,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Roadmap / Known limitations
 
-- **Surrender**: not implemented.
 - **Reinforcement learning**: the engine's `current_actor` / `legal_actions()`
   / `act()` API is designed to be RL-friendly; a `Gymnasium`-style env
   wrapper and baseline agents (random / basic strategy) are the natural next
