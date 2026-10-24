@@ -1,5 +1,9 @@
 # Blackjack Engine
 
+[![Tests](https://github.com/lysapala93/blackjack-engine/actions/workflows/tests.yml/badge.svg)](https://github.com/lysapala93/blackjack-engine/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python 3.14+](https://img.shields.io/badge/python-3.14%2B-blue.svg)
+
 A Python-based Blackjack simulation engine built as an explicit **phase state
 machine**. The engine never blocks on `input()`/`print()` and never runs an
 internal game loop — it only exposes a small, synchronous API
