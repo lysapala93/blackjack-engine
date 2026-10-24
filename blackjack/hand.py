@@ -88,6 +88,7 @@ class Hand:
         self._insurance: int | None = None
         self._even_money: bool = False
         self._early_surrender: bool = False
+        self._late_surrender: bool = False
         self._stand: bool = False
         self._from_split: bool = from_split
         self._revealed: bool = False
@@ -151,6 +152,14 @@ class Hand:
     @early_surrender.setter
     def early_surrender(self, flag: bool) -> None:
         self._early_surrender = flag
+
+    @property
+    def late_surrender(self) -> bool:
+        return self._late_surrender
+
+    @late_surrender.setter
+    def late_surrender(self, flag: bool) -> None:
+        self._late_surrender = flag
 
     @property
     def stand(self) -> bool:
